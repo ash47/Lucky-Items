@@ -8,9 +8,9 @@ Lucky-Items
 ***
 
 ##### 1.3.0 (8/25/13)
-- Finished a bulk update for the tailoring module, all heroes are personally tailored for their core & extension items, whilst also having an item ban list
+- Finished a small update for the tailoring module, some heroes are personally tailored for their core & extension items, whilst also having an item ban list.
  - Added a tiny weight increase for primary attribute items.
- - 1.3.1 will include support for OMG plugins.
+ - 1.3.1 will include support for OMG plugins and have all heroes available.
 - **Component exclusion list** changes:
  - Wraith Band [Exempt: Bracer, Null Talisman]
  - Null Talisman [Exempt: Wraith Band, Bracer]
