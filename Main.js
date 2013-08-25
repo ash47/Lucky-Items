@@ -76,7 +76,7 @@ var warden = {
 	// This is the inventory queue to manage items when a player cannot be given more items.
 	// An integral part of the plugin, and cannot be disabled.
 	queue: {
-		checkXSeconds: 0.8,		// Every X seconds, check our inventory queue & dispense items
+		checkXSeconds: 1.2,		// Every X seconds, check our inventory queue & dispense items
 		reminded: false,		// Have we reminded our player?
 		remindNItems: 2,		// Reminder trigger on the amount of items in a player's queue
 		reminderTimeout: 120,	// Every X seconds, remind our player they have items in their queue
@@ -88,6 +88,7 @@ var warden = {
 	// Plugin sound effects that occur when an item is randomed to a player or other trigger events.
 	soundEffects: {
 		enabled: true,			// Enabled / disabled
+		timeThreshold: 150,		// Below this time (in seconds) threshold, disable them
 		list: [					// List of sound effects to use
 			"ui/npe_objective_given.wav"
 			// "ui/ui_add_to_inventory_01.wav"
@@ -97,6 +98,7 @@ var warden = {
 	dropNotifications: {
 		lead: "\x02%s\x01",		// Lead item time (NOTE: Always enabled)
 		enabled: true,			// Enable / disable subsequent notifications
+		timeThreshold: 150,		// Below this time (in seconds) threshold, disable them
 		subsequent: "%s",		// Subsequent item time
 	},
 	// Properties of the generated base item table
@@ -147,7 +149,7 @@ var warden = {
 		// Addon version: 1.0.0
 		// Buys a courier for each team if they don't have one by the end of the pre-game phase.
 		helpingHand: {
-			enabled: true,
+			enabled: false,
 			courierBoughtForRadiant: false,
 			courierBoughtForDire: false
 		},
@@ -159,14 +161,11 @@ var warden = {
 			checkAbilities: false,
 			heroFile: keyvalue.parseKVFile("hero_base.kv"),
 			spellFile: keyvalue.parseKVFile("spell_base.kv"),
+			// Any plugins listed below will disable the tailor module completely.
 			disallowPlugins: [
-				"DMDota", // Only reasoning: Constant hero swapping, which would be impossible for this module.
-
-				"OMGDota", // Will work on ability detection with this in a later release :)
-				"bomg", // Same as above ^
-				"LegendsOfDota", // Same as above ^
-				"SickSkills" // Same as above ^
+				"DMDota", // Constant hero swapping, which would be impossible for this module.
 			],
+			// Any plugins listed below will switch the method on how the hero is tailored.
 			abilityPlugins: [
 				"OMGDota",
 				"bomg",
@@ -174,7 +173,7 @@ var warden = {
 				"SickSkills"
 			],
 			rules: {
-				scepterUpgradeWeightIncrease: 250,
+				scepterUpgradeWeightIncrease: 500,
 				tailoredItemBuildWeightIncrease: 150,
 				primaryAttributeWeightIncrease: 50
 			}
@@ -380,54 +379,55 @@ function tailorHeroes() {
 
 				var hero = client.netprops.m_hAssignedHero;
 				var heroName = hero.getClassname();
-				// var heroFileName = "default_" + heroName.split("_").pop() + ".kv";
-
-				// var file = keyvalue.parseKVFile(heroFileName);
-				var hFile = wardrobe.heroFile;
-
 				playerProps[playerID].lootTable = tmpTable;
 
-				// Weight modifications based on hero.
-				if ( typeof hFile.Heroes[heroName].itemBuild !== "undefined" ) {
-					for (j = 0; j < hFile.Heroes[heroName].itemBuild.length; j++) {
-						var prop = hFile.Heroes[heroName].itemBuild[j];
-						for (k = 0; k < playerProps[playerID].lootTable.length; k++) {
-							var entry = playerProps[playerID].lootTable[k];
-							if (entry[0] == prop) {
-								playerProps[playerID].lootTable[k][1] += wardrobe.rules.tailoredItemBuildWeightIncrease;
-								// var price = entry[2];
-								// var itemPhase = entry[3];
-								// var weightAlgorithm = (price / itemPhase) + wardrobe.rules.phaseModifier;
-								// playerProps[playerID].lootTable[k][1] += weightAlgorithm;
+				if (!wardrobe.checkAbilities) {
+					// Weight modifications based on hero.
+					var hFile = wardrobe.heroFile;
+
+					if ( typeof hFile.Heroes[heroName] !== "undefined") {
+						if ( typeof hFile.Heroes[heroName].itemBuild !== "undefined" ) {
+							for (j = 0; j < hFile.Heroes[heroName].itemBuild.length; j++) {
+								var prop = hFile.Heroes[heroName].itemBuild[j];
+								for (k = 0; k < playerProps[playerID].lootTable.length; k++) {
+									var entry = playerProps[playerID].lootTable[k];
+									if (entry[0] == prop) {
+										playerProps[playerID].lootTable[k][1] += wardrobe.rules.tailoredItemBuildWeightIncrease;
+									}
+								}
+							}
+						}
+
+						if ( typeof hFile.Heroes[heroName].bannedBuild !== "undefined" ) {
+							for (j = 0; j < hFile.Heroes[heroName].bannedBuild.length; j++) {
+								for (k = 0; k < playerProps[playerID].lootTable.length; k++) {
+									var entry = playerProps[playerID].lootTable[k];
+
+									if (entry[0] == hFile.Heroes[heroName].bannedBuild[j]) {
+										entry[1] = 0;
+									}
+								}
+							}
+						}
+
+						for (j = 0; j < playerProps[playerID].lootTable.length; j++) {
+							var entry = playerProps[playerID].lootTable[j];
+
+							// Scepter changes
+							if (entry[0] == "item_ultimate_scepter") {
+								if ( hFile.Heroes[heroName].ultimateUpgrade === 0 ) {
+									entry[1] = 0;
+								}
+								else if ( hFile.Heroes[heroName].ultimateUpgrade === 1 ) {
+									entry[1] = wardrobe.rules.scepterUpgradeWeightIncrease;
+								}
 							}
 						}
 					}
 				}
-
-				if ( typeof hFile.Heroes[heroName].bannedBuild !== "undefined" ) {
-					for (j = 0; j < hFile.Heroes[heroName].bannedBuild.length; j++) {
-						for (k = 0; k < playerProps[playerID].lootTable.length; k++) {
-							var entry = playerProps[playerID].lootTable[k];
-
-							if (entry[0] == hFile.Heroes[heroName].bannedBuild[j]) {
-								entry[1] = 0;
-							}
-						}
-					}
-				}
-
-				for (j = 0; j < playerProps[playerID].lootTable.length; j++) {
-					var entry = playerProps[playerID].lootTable[j];
-
-					// Scepter changes
-					if (entry[0] == "item_ultimate_scepter") {
-						if ( hFile.Heroes[heroName].ultimateUpgrade === 0 ) {
-							entry[1] = 0;
-						}
-						else if ( hFile.Heroes[heroName].ultimateUpgrade === 1 ) {
-							entry[1] = wardrobe.rules.scepterUpgradeWeightIncrease;
-						}
-					}
+				else {
+					// Weight modifications based on hero abilities
+					var hFile = wardrobe.spellFile;
 				}
 
 				playerProps[playerID].buildLootTable = false;
@@ -552,11 +552,6 @@ function generateLoot() {
 		itemName = getUniqueItemName(playerID, heroItemsEquipped);
 		giveItemToClient(itemName, client);
 
-		if (warden.soundEffects.enabled) {
-			var sound = warden.soundEffects.list[getRandomInt(warden.soundEffects.list.length)];
-			dota.sendAudio(client, false, sound);
-		}
-
 		if (warden.reLootTable.indexOf(itemName) !== -1 && getRandomInt(100) <= warden.reLootPercentage) {
 			itemName = getUniqueItemName(playerID, heroItemsEquipped);
 			giveItemToClient(itemName, client);
@@ -656,6 +651,10 @@ function giveItemToClient(itemName, client, addToQueue) {
 
 	if (hero.netprops.m_lifeState === UNIT_LIFE_STATE_ALIVE) {
 		if (spaceInInventory || spaceInStash) {
+			if (warden.soundEffects.enabled) {
+				var sound = warden.soundEffects.list[getRandomInt(warden.soundEffects.list.length)];
+				dota.sendAudio(client, false, sound);
+			}
 			if (spaceInInventory) {
 				for (var v = HERO_INVENTORY_BEGIN; v <= HERO_INVENTORY_END; ++v)
 				{
@@ -1135,12 +1134,10 @@ function Dota_OnBuyItem(unit, item, playerID, unknown)
 	if (item == "item_courier" && warden.addons.helpingHand.enabled) {
 		var client = dota.findClientByPlayerID(playerID);
 		var teamID = client.netprops.m_iTeamNum;
-		if (teamID === TEAM_RADIANT && !warden.addons.helpingHand.courierBoughtForRadiant) 
+		if (teamID === TEAM_RADIANT && !warden.addons.helpingHand.courierBoughtForRadiant)
 			warden.addons.helpingHand.courierBoughtForRadiant = true;
-		}
-		else if (teamID === TEAM_DIRE && !warden.addons.helpingHand.courierBoughtForDire) {
+		else if (teamID === TEAM_DIRE && !warden.addons.helpingHand.courierBoughtForDire)
 			warden.addons.helpingHand.courierBoughtForDire = true;
-		}
 	}
 }
 function onPlayerKilled(event) {
@@ -1204,8 +1201,13 @@ plugin.get('LobbyManager', function(obj){
 		warden.leadTime.length = 0;
 		warden.leadTime = [optionTime];
 		warden.nextBase = [optionTime];
+
 		var s = convertMinutesToSeconds(optionTime);
-		if (s < 150)
+
+		if (s < warden.soundEffects.timeThreshold)
+			warden.soundEffects.enabled = false;
+
+		if (s < warden.dropNotifications.timeThreshold)
 			warden.dropNotifications.enabled = false;
 	}
 
