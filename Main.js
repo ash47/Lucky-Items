@@ -1225,7 +1225,7 @@ function buildItemTable() {
 		case 2: // Aegis & Rapier
 			for (i = 0; i < tmp.length; ++i) {
 				var itemList = ["item_rapier", "item_aegis"];
-				if ( itemList[m].indexOf(tmp[i][0]) > -1 ) {
+				if ( itemList.indexOf(tmp[i][0]) > -1 ) {
 					if (li.itemTable.useWeights) {
 						if (tmp[i][0] == "item_rapier")
 							tmp[i][1] = 35;
@@ -1297,7 +1297,7 @@ function setupItemTable(option) {
 		case "Caster & Support items only":
 			li.itemTable.customMode = 3;
 			break;
-		case "Damage & Attack Speed items only":
+		case "Weapon items only":
 			li.itemTable.customMode = 4;
 			break;
 		case "Armor & Defensive items only":
