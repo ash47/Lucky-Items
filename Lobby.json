@@ -1,7 +1,7 @@
 {
-	"mainFields": ["Interval"], 
+	"mainFields": ["Speed"], 
 	"fields": {
-		"Interval": {
+		"Speed": {
 			"type": "select",
 			"options":	[
 				"5:00",
@@ -44,15 +44,15 @@
 				"Non-weighted"
 			]
 		},
-		"PoolType": {
+		"Selection": {
 			"type": "select",
 			"options": [
-				"Greater than 1,000g items",
-				"Greater than 275g items",
-				"Greater than 1,500g items",
-				"Greater than 2,000g items",
-				"Greater than 2,500g items",
-				"Greater than 3,000g items",
+				"Greater than 1,000g",
+				"Greater than 275g",
+				"Greater than 1,500g",
+				"Greater than 2,000g",
+				"Greater than 2,500g",
+				"Greater than 3,000g",
 				"Aegis & Rapier only"
 			]
 		}
