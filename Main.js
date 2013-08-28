@@ -54,7 +54,7 @@ var li = {
 	leadTime: ['5:00'],			// lead item drop : STATE_GAME_IN_PROGRESS
 	nextBase: ['5:00'],			// subsequent drops after the lead
 	shakeTime: 6,				// random x seconds off designated drop times
-	nextTime: 0,				// When our next drop will occur
+	nextTime: 0,				// when our next drop will occur
 	gameTime: null,				// keeps track of the game frame time
 	currentWave: 0,				// keeps track of the current item wave
 	playerList: [],				// which players will receive an item
@@ -63,8 +63,7 @@ var li = {
 	itemDropFavorPercent: 40,   // percentage chance to get a favored item after a low one
 	maxTries: 8,				// prevent an infinite search loop, break
 	maxTriesLoot: [				// we can't find our player an item, default to these
-		"item_cheese",
-		"item_rapier"
+		"item_cheese"
 	],
 	reLootPercentage: 75,		// a percentage chance to random twice on specific items
 	reLootTable: [				// items to perform another random on.
@@ -116,9 +115,9 @@ var li = {
 		// This section modifies the base item table when specified
 		counter: {},
 		// This section disables additional randoms for aura-based or team-wide items.
-		// li will only dispense (randomly) the set number of items per team.
+		// will only dispense (randomly) the set number of items per team.
 		countLimitPerTeam: {},
-		maxEachLimit: 2,
+		maxEachLimit: 4,
 		limitPerTeam: {
 			// Aura-based / utility items
 			item_medallion_of_courage: 1,
@@ -159,7 +158,7 @@ var li = {
 		// Addon version: 1.0.0
 		// Buys a courier for each team if they don't have one by the end of the pre-game phase.
 		donkey: {
-			enabled: true,
+			enabled: false,
 			loaded: false,
 			radiant: {
 				courier: false,
@@ -262,7 +261,7 @@ var baseItemTable = [
 	//    4 - Intelligence
 	//
 	// Shop Mask:
-	//    1 - Caster Items
+	//    1 - Caster/Support Items
 	//    2 - Weapons
 	//    4 - Armor
 	//
@@ -285,8 +284,8 @@ var baseItemTable = [
 	// [0            1,           2,     3,         4,             5,      ]
 	// ["Classname", weight(0-∞), price, gamePhase, attributeMask, shopMask], // Weapon Name (price)
 	//
-	["item_aegis",                   5,    0, 0, 0, 0], // Aegis of the Immortal (0g)
-	["item_cheese",                  5,    0, 0, 0, 0], // Cheese (0g)
+	["item_aegis",                   5,    0, 0, -1, -1], // Aegis of the Immortal (0g)
+	["item_cheese",                  5,    0, 0, -1, -1], // Cheese (0g)
 	//
 	["item_orb_of_venom",          230,  275, 1, 0, 0], // Orb of Venom (275g)
 	["item_null_talisman",         220,  470, 1, 4, 0], // Null Talisman (470g)
@@ -295,66 +294,68 @@ var baseItemTable = [
 	["item_bracer",                220,  525, 1, 1, 0], // Bracer (525g)
 	["item_poor_mans_shield",      220,  550, 1, 3, 0], // Poor Man's Shield (550g)
 	["item_headdress",             215,  603, 1, 4, 0], // Headdress (603g)
-	["item_soul_ring",             210,  800, 1, 4, 0], // Soul Ring (800g)
+	["item_soul_ring",             210,  800, 1, 4, 1], // Soul Ring (800g)
 	["item_buckler",               210,  803, 1, 4, 0], // Buckler (803g)
-	["item_urn_of_shadows",        210,  875, 1, 1, 0], // Urn of Shadows (875g)
-	["item_void_stone",            210,  875, 1, 0, 0], // Void Stone (875g)
-	["item_ring_of_health",        210,  875, 1, 0, 0], // Ring of Health (875g)
-	["item_ring_of_aquila",        205,  985, 1, 0, 0], // Ring of Aquila (985g)
-	["item_ogre_axe",              200, 1000, 1, 1, 0], // Ogre Axe (1,000g)
-	["item_blade_of_alacrity",     200, 1000, 1, 2, 0], // Blade of Alacrity (1,000g)
-	["item_staff_of_wizardry",     200, 1000, 1, 4, 0], // Staff of Wizardry (1,000g)
-	["item_energy_booster",        200, 1000, 1, 4, 0], // Energy Booster (1,000g)
-	["item_medallion_of_courage",  200, 1075, 1, 0, 0], // Medallion of Courage (1,075g)
-	["item_vitality_booster",      190, 1100, 1, 7, 0], // Vitality Booster (1,100g)
-	["item_point_booster",         180, 1200, 1, 7, 0], // Point Booster (1,200g)
-	["item_broadsword",            180, 1200, 1, 0, 0], // Broadsword (1,200g)
-	["item_phase_boots",           170, 1350, 1, 0, 0], // Phase Boots (1,350g)
-	["item_platemail",             160, 1400, 1, 0, 0], // Platemail (1,400g)
-	["item_claymore",              160, 1400, 1, 0, 0], // Claymore (1,400g)
-	["item_power_treads",          160, 1400, 1, 7, 0], // Power Treads (1,400g)
-	["item_arcane_boots",          160, 1450, 1, 4, 0], // Arcane Boots (1,450g)
-	["item_javelin",               150, 1500, 1, 0, 0], // Javelin (1,500g)
-	["item_ghost",                 140, 1600, 1, 0, 0], // Ghost Scepter (1,600g)
+	["item_urn_of_shadows",        210,  875, 1, 1, 7], // Urn of Shadows (875g)
+	["item_void_stone",            210,  875, 1, 0, 1], // Void Stone (875g)
+	["item_ring_of_health",        210,  875, 1, 0, 4], // Ring of Health (875g)
+	["item_helm_of_iron_will",     210,  950, 1, 0, 4], // Helm of Iron Will (950g)
+	["item_tranquil_boots",        210,  975, 1, 0, 0], // Tranquil Boots (975g)
+	["item_ring_of_aquila",        205,  985, 1, 0, 1], // Ring of Aquila (985g)
+	["item_ogre_axe",              200, 1000, 1, 1, 4], // Ogre Axe (1,000g)
+	["item_blade_of_alacrity",     200, 1000, 1, 2, 2], // Blade of Alacrity (1,000g)
+	["item_staff_of_wizardry",     200, 1000, 1, 4, 1], // Staff of Wizardry (1,000g)
+	["item_energy_booster",        200, 1000, 1, 4, 1], // Energy Booster (1,000g)
+	["item_medallion_of_courage",  200, 1075, 1, 0, 2], // Medallion of Courage (1,075g)
+	["item_vitality_booster",      190, 1100, 1, 7, 4], // Vitality Booster (1,100g)
+	["item_point_booster",         180, 1200, 1, 7, 1], // Point Booster (1,200g)
+	["item_broadsword",            180, 1200, 1, 0, 2], // Broadsword (1,200g)
+	["item_phase_boots",           170, 1350, 1, 0, 2], // Phase Boots (1,350g)
+	["item_platemail",             160, 1400, 1, 0, 4], // Platemail (1,400g)
+	["item_claymore",              160, 1400, 1, 0, 2], // Claymore (1,400g)
+	["item_power_treads",          160, 1400, 1, 7, 6], // Power Treads (1,400g)
+	["item_arcane_boots",          160, 1450, 1, 4, 1], // Arcane Boots (1,450g)
+	["item_javelin",               150, 1500, 1, 0, 2], // Javelin (1,500g)
+	["item_ghost",                 140, 1600, 1, 0, 1], // Ghost Scepter (1,600g)
 	["item_shadow_amulet",         140, 1600, 1, 0, 0], // Shadow Amulet (1,600g)
-	["item_mithril_hammer",        140, 1600, 1, 0, 0], // Mithril Hammer (1,600g)
-	["item_oblivion_staff",        140, 1675, 1, 0, 0], // Oblivion Staff (1,675g)
-	["item_pers",                  130, 1750, 1, 0, 0], // Perseverance (1,750g)
-	["item_ancient_janggo",        130, 1775, 1, 7, 0], // Drums of Endurance (1,775g)
-	["item_talisman_of_evasion",   120, 1800, 1, 0, 0], // Talisman of Evasion (1,800g)
-	["item_helm_of_the_dominator", 120, 1850, 1, 3, 2], // Helm of the Dominator (1,850g)
-	["item_hand_of_midas",         110, 1900, 1, 0, 0], // Hand of Midas (1,900g)
-	["item_mask_of_madness",       110, 1900, 1, 3, 2], // Mask of Madness (1,900g)
+	["item_mithril_hammer",        140, 1600, 1, 0, 2], // Mithril Hammer (1,600g)
+	["item_oblivion_staff",        140, 1675, 1, 0, 1], // Oblivion Staff (1,675g)
+	["item_pers",                  130, 1750, 1, 0, 1], // Perseverance (1,750g)
+	["item_ancient_janggo",        130, 1775, 1, 7, 7], // Drums of Endurance (1,775g)
+	["item_talisman_of_evasion",   120, 1800, 2, 0, 4], // Talisman of Evasion (1,800g)
+	["item_helm_of_the_dominator", 120, 1850, 2, 3, 2], // Helm of the Dominator (1,850g)
+	["item_hand_of_midas",         110, 1900, 1, 0, 2], // Hand of Midas (1,900g)
+	["item_mask_of_madness",       110, 1900, 2, 3, 2], // Mask of Madness (1,900g)
 	["item_vladmir",               100, 2050, 2, 3, 2], // Vladmir's Offering (2,050g)
-	["item_yasha",                 100, 2050, 2, 2, 0], // Yasha (2,050g)
-	["item_sange",                 100, 2050, 2, 1, 0], // Sange (2,050g)
-	["item_ultimate_orb",           95, 2100, 2, 7, 0], // Ultimate Orb (2,100g)
-	["item_hyperstone",             95, 2100, 2, 3, 0], // Hyperstone (2,100g)
-	["item_hood_of_defiance",       95, 2125, 2, 0, 0], // Hood of Defiance (2,125g)
-	["item_blink",                  95, 2150, 2, 0, 0], // Blink Dagger (2,150g)
-	["item_lesser_crit",            15, 2150, 2, 2, 0], // Crystalys (2,150g)
-	["item_blade_mail",             90, 2200, 2, 1, 0], // Blade Mail (2,200g)
-	["item_vanguard",               90, 2225, 2, 0, 0], // Vanguard (2,225g)
-	["item_force_staff",            90, 2250, 2, 4, 0], // Force Staff (2,250g)
-	["item_mekansm",                85, 2306, 2, 4, 0], // Mekansm (2,306g)
-	["item_demon_edge",             80, 2400, 2, 3, 0], // Demon Edge (2,400g)
-	["item_travel_boots",           80, 2450, 3, 0, 0], // Boots of Travel (2,450g)
+	["item_yasha",                 100, 2050, 2, 2, 2], // Yasha (2,050g)
+	["item_sange",                 100, 2050, 2, 1, 2], // Sange (2,050g)
+	["item_ultimate_orb",           95, 2100, 2, 7, 3], // Ultimate Orb (2,100g)
+	["item_hyperstone",             95, 2100, 2, 3, 2], // Hyperstone (2,100g)
+	["item_hood_of_defiance",       95, 2125, 2, 0, 1], // Hood of Defiance (2,125g)
+	["item_blink",                  95, 2150, 1, 0, 7], // Blink Dagger (2,150g)
+	["item_lesser_crit",            15, 2150, 2, 2, 2], // Crystalys (2,150g)
+	["item_blade_mail",             90, 2200, 2, 1, 4], // Blade Mail (2,200g)
+	["item_vanguard",               90, 2225, 2, 0, 4], // Vanguard (2,225g)
+	["item_force_staff",            90, 2250, 1, 4, 7], // Force Staff (2,250g)
+	["item_mekansm",                85, 2306, 2, 4, 1], // Mekansm (2,306g)
+	["item_demon_edge",             80, 2400, 2, 3, 2], // Demon Edge (2,400g)
+	["item_travel_boots",           80, 2450, 3, 0, 7], // Boots of Travel (2,450g)
 	["item_armlet",                 75, 2600, 2, 1, 2], // Armlet of Mordiggan (2,600g)
 	["item_veil_of_discord",        65, 2650, 2, 0, 1], // Veil of Discord (2,650g)
-	["item_mystic_staff",           60, 2700, 2, 4, 0], // Mystic Staff (2,700g)
+	["item_mystic_staff",           60, 2700, 2, 4, 1], // Mystic Staff (2,700g)
 	["item_necronomicon",           60, 2700, 2, 5, 1], // Necronomicon 1 (2,700g)
-	["item_maelstrom",              60, 2700, 2, 3, 0], // Maelstrom (2,700g)
+	["item_maelstrom",              60, 2700, 2, 3, 2], // Maelstrom (2,700g)
 	["item_cyclone",                60, 2700, 2, 4, 1], // Eul's Scepter of Divinity (2,700g)
 	["item_dagon",                  60, 2730, 2, 5, 1], // Dagon 1 (2,730g)
-	["item_basher",                 55, 2950, 2, 1, 0], // Skull Basher (2,950g)
+	["item_basher",                 55, 2950, 2, 1, 2], // Skull Basher (2,950g)
 	["item_invis_sword",            55, 3001, 2, 7, 2], // Shadow Blade (3,000g)
 	["item_rod_of_atos",            50, 3100, 3, 4, 1], // Rod of Atos (3,100g)
-	["item_reaver",                 45, 3200, 3, 1, 0], // Reaver (3,200g)
-	["item_soul_booster",           40, 3300, 3, 7, 0], // Soul Booster (3,300g)
-	["item_eagle",                  40, 3300, 3, 2, 0], // Eaglesong (3,300g)
+	["item_reaver",                 45, 3200, 3, 1, 4], // Reaver (3,200g)
+	["item_soul_booster",           40, 3300, 3, 7, 1], // Soul Booster (3,300g)
+	["item_eagle",                  40, 3300, 3, 2, 2], // Eaglesong (3,300g)
 	["item_diffusal_blade",         40, 3300, 3, 3, 2], // Diffusal Blade (3,300g)
-	["item_pipe",                   25, 3628, 3, 5, 0], // Pipe of Insight (3,628g)
-	["item_relic",                  15, 3800, 3, 7, 0], // Sacred Relic (3,800g)
+	["item_pipe",                   25, 3628, 3, 5, 1], // Pipe of Insight (3,628g)
+	["item_relic",                  15, 3800, 3, 7, 2], // Sacred Relic (3,800g)
 	["item_heavens_halberd",        15, 3850, 3, 1, 2], // Heaven's Halberd (3,850g)
 	["item_black_king_bar",         15, 3900, 3, 7, 4], // Black King Bar (3,900g)
 	["item_necronomicon_2",         10, 3950, 3, 0, 1], // Necronomicon 2 (3,950g)
@@ -388,6 +389,9 @@ var baseItemTable = [
 	["item_abyssal_blade",           1, 6750, 3, 1, 2], // Abyssal Blade (6,750g)
 	["item_dagon_5",                 1, 7730, 3, 0, 1], // Dagon 5 (7,730g)
 ];
+function containsFlag(flags, flag) {
+    return (flags & flag) === flag;
+}
 
 // ==========================================
 // Game Phase Loot Modifier
@@ -526,16 +530,32 @@ timers.setInterval(function() {
 			}
 			if (!donkey.radiant.courier) {
 				var entity = dota.createUnit("npc_dota_courier", TEAM_RADIANT);
-				entity.netprops.m_iIsControllableByPlayer = donkey.radiant.controlMask;
-				dota.findClearSpaceForUnit(entity, donkey.radiant.spawnLocation);
+				var radiMask = 0;
+				for (var key in playerProps) {
+					var obj = playerProps[key];
+					var playerID = obj.ID;
+					var team = getTeamIDFromPlayerID(playerID);
+					if (team === TEAM_RADIANT)
+						radiMask += Math.pow(2, playerID);
+				}
+				entity.netprops.m_iIsControllableByPlayer = radiMask;
 				donkey.radiant.entityID = entity;
+				dota.findClearSpaceForUnit(entity, donkey.radiant.spawnLocation);
 				donkey.radiant.courier = true;
 			}
 			if (!donkey.dire.courier) {
 				var entity = dota.createUnit("npc_dota_courier", TEAM_DIRE);
-				entity.netprops.m_iIsControllableByPlayer = donkey.dire.controlMask;
-				dota.findClearSpaceForUnit(entity, donkey.dire.spawnLocation);
+				var direMask = 0;
+				for (var key in playerProps) {
+					var obj = playerProps[key];
+					var playerID = obj.ID;
+					var team = getTeamIDFromPlayerID(playerID);
+					if (team === TEAM_DIRE)
+						direMask += Math.pow(2, playerID);
+				}
+				entity.netprops.m_iIsControllableByPlayer = direMask;
 				donkey.dire.entityID = entity;
+				dota.findClearSpaceForUnit(entity, donkey.dire.spawnLocation);
 				donkey.dire.courier = true;
 			}
 			timers.setInterval(function() {
@@ -674,10 +694,30 @@ function generateLoot() {
 	li.playerList.length = 0;
 }
 
+function checkForBoots(heroInventory, boots) {
+	for (var i = 0; i < heroInventory.length; ++i)
+	{
+		if (boots.indexOf(heroInventory[i]) > -1)
+			return true;
+	}
+	return false;
+}
+
 function getUniqueItemName(playerID, heroInventory) {
 	var itemNamesGiven = [], rolls = 0, itemName;
 
 	itemNamesGiven = getPlayerProp(playerID, "itemNamesGiven");
+
+	var boots = [
+		"item_boots",
+		"item_travel_boots",
+		"item_tranquil_boots",
+		"item_arcane_boots",
+		"item_power_treads",
+		"item_phase_boots"
+	];
+
+	var hasBoots = checkForBoots(heroInventory, boots);
 
 	do
 	{
@@ -696,7 +736,7 @@ function getUniqueItemName(playerID, heroInventory) {
 			break;
 
 	}
-	while ( heroInventory.indexOf(itemName) > -1 || itemNamesGiven.indexOf(itemName) > -1 );
+	while ( heroInventory.indexOf(itemName) > -1 || itemNamesGiven.indexOf(itemName) > -1 || (hasBoots && boots.indexOf(itemName) > -1) );
 
 	if (li.doNotConsiderDupes.indexOf(itemName) === -1)
 	{
@@ -718,7 +758,30 @@ function getUniqueItemName(playerID, heroInventory) {
 
 			li.itemTable.countLimitPerTeam[itemName] += 1;
 
-			if ( typeof li.itemTable.limitPerTeam[itemName] !== "undefined" && li.itemTable.countLimitPerTeam[itemName] === li.itemTable.limitPerTeam[itemName] || li.itemTable.countLimitPerTeam[itemName] === li.itemTable.maxEachLimit) {
+			if ( typeof li.itemTable.limitPerTeam[itemName] !== "undefined" && li.itemTable.countLimitPerTeam[itemName] === li.itemTable.limitPerTeam[itemName]) {
+				var teamID = getTeamIDFromPlayerID(playerID);
+				if (teamID !== null) {
+					var playerIDs = getConnectedPlayerIDsOnTeam(teamID);
+					for (var i = 0; i < playerIDs.length; ++i)
+					{
+						var teamPlayerID = playerIDs[i];
+						// Skip the player that landed the item
+						if (teamPlayerID === playerID)
+							continue;
+
+						if (playerProps[teamPlayerID]) {
+							var exclusionList = getPlayerProp(teamPlayerID, "itemNamesGiven");
+
+							if ( exclusionList.indexOf(itemName) > -1 )
+								continue;
+
+							exclusionList.push(itemName);
+							setPlayerProp(teamPlayerID, "itemNamesGiven", exclusionList);
+						}
+					}
+				}
+			}
+			else if (li.itemTable.countLimitPerTeam[itemName] === li.itemTable.maxEachLimit) {
 				var teamID = getTeamIDFromPlayerID(playerID);
 				if (teamID !== null) {
 					var playerIDs = getConnectedPlayerIDsOnTeam(teamID);
@@ -1142,27 +1205,65 @@ function buildItemTable() {
 	var mainItemTable = [];
 	mainItemTable.length = 0;
 	var tmp = baseItemTable.clone();
-	if (li.itemTable.customMode === 1) {
-		for (i = 0; i < tmp.length; ++i) {
-			if ( tmp[i][2] === 0 || tmp[i][2] > li.itemTable.priceRangeMin && tmp[i][2] < li.itemTable.priceRangeMax ) {
-				mainItemTable.push(tmp[i]);
-			}
+	// Always included in table
+	for (i = 0; i < tmp.length; ++i) {
+		if ( tmp[i][2] === 0 ) {
+			mainItemTable.push(tmp[i]);
 		}
 	}
-	else if (li.itemTable.customMode === 2) {
-		for (i = 0; i < tmp.length; ++i) {
-			var itemList = ["item_rapier", "item_aegis"];
-			if ( itemList[m].indexOf(tmp[i][0]) > -1 ) {
-				if (li.itemTable.useWeights) {
-					if (tmp[i][0] == "item_rapier")
-						tmp[i][1] = 60;
-
-					if (tmp[i][0] == "item_aegis")
-						tmp[i][1] = 40;
+	// Apply additional modifications to tmp table
+	switch(li.itemTable.customMode)
+	{
+		default:
+		case 1:
+			for (i = 0; i < tmp.length; ++i) {
+				if ( tmp[i][2] > li.itemTable.priceRangeMin && tmp[i][2] < li.itemTable.priceRangeMax ) {
+					mainItemTable.push(tmp[i]);
 				}
-				mainItemTable.push(tmp[i]);
 			}
-		}
+			break;
+		case 2: // Aegis & Rapier
+			for (i = 0; i < tmp.length; ++i) {
+				var itemList = ["item_rapier", "item_aegis"];
+				if ( itemList[m].indexOf(tmp[i][0]) > -1 ) {
+					if (li.itemTable.useWeights) {
+						if (tmp[i][0] == "item_rapier")
+							tmp[i][1] = 35;
+
+						if (tmp[i][0] == "item_aegis")
+							tmp[i][1] = 65;
+					}
+				}
+			}
+			break;
+		case 3: // Caster/Support items only
+			for (i = 0; i < tmp.length; ++i) {
+				if ( containsFlag(tmp[i][5], 1) && tmp[i][5] !== 0 ) {
+					mainItemTable.push(tmp[i]);
+				}
+			}
+			break;
+		case 4: // Damage items only
+			for (i = 0; i < tmp.length; ++i) {
+				if ( containsFlag(tmp[i][5], 2) && tmp[i][5] !== 0 ) {
+					mainItemTable.push(tmp[i]);
+				}
+			}
+			break;
+		case 5: // Armor/Defensive items only
+			for (i = 0; i < tmp.length; ++i) {
+				if ( containsFlag(tmp[i][5], 4) && tmp[i][5] !== 0 ) {
+					mainItemTable.push(tmp[i]);
+				}
+			}
+			break;
+		case 6: // Early Game items only
+			for (i = 0; i < tmp.length; ++i) {
+				if ( tmp[i][3] === 1 ) {
+					mainItemTable.push(tmp[i]);
+				}
+			}
+			break;
 	}
 	li.itemTable.instance = mainItemTable;
 }
@@ -1187,8 +1288,20 @@ function setupItemTable(option) {
 		case "Greater than 3,000g":
 			li.itemTable.priceRangeMin = 3000;
 			break;
+		case "Early Game items only":
+			li.itemTable.customMode = 6;
+			break;
 		case "Aegis & Rapier only":
-			li.itemTable.mode = 2;
+			li.itemTable.customMode = 2;
+			break;
+		case "Caster & Support items only":
+			li.itemTable.customMode = 3;
+			break;
+		case "Damage & Attack Speed items only":
+			li.itemTable.customMode = 4;
+			break;
+		case "Armor & Defensive items only":
+			li.itemTable.customMode = 5;
 			break;
 	}
 
@@ -1502,8 +1615,8 @@ function cleanupTrash() {
 if (g_plugin.developer) {
 	li.leadTime.length = 0;
 	li.nextBase.length = 0;
-	li.leadTime = ['0:15'];
-	li.nextBase = ['0:15'];
+	li.leadTime = ['0:10'];
+	li.nextBase = ['0:10'];
 	var nextBase = convertMinutesToSeconds(li.nextBase[0]);
 
 	if (nextBase <= 120)
@@ -1511,7 +1624,10 @@ if (g_plugin.developer) {
 
 	li.shakeTime = 1;
 
-	setupItemTable("Greater than 1,000g");
+	// setupItemTable("Caster/Support items only");
+	// li.itemTable.customMode = 5;
+	setupItemTable("Armor & Defensive items only");
+	// buildItemTable();
 
 	console.addClientCommand("load", liFill);
 	function liFill(client, args) {

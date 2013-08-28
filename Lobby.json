@@ -53,7 +53,11 @@
 				"Greater than 2,000g",
 				"Greater than 2,500g",
 				"Greater than 3,000g",
-				"Aegis & Rapier only"
+				"Aegis & Rapier only",
+				"Early Game items only",
+				"Caster & Support items only",
+				"Damage & Attack Speed items only",
+				"Armor & Defensive items only"
 			]
 		}
 	}
