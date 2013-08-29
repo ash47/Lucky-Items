@@ -44,6 +44,24 @@
 				"Non-weighted"
 			]
 		},
+		"Amount": {
+			"type": "select",
+			"options": [
+				"15 Waves",
+				"10 Waves",
+				"9 Waves",
+				"8 Waves",
+				"7 Waves",
+				"6 Waves",
+				"5 Waves",
+				"4 Waves",
+				"3 Waves",
+				"2 Waves",
+				"1 Wave",
+				"20 Waves",
+				"∞ Waves"
+			]
+		},
 		"Selection": {
 			"type": "select",
 			"options": [
@@ -53,11 +71,11 @@
 				"Greater than 2,000g",
 				"Greater than 2,500g",
 				"Greater than 3,000g",
-				"Aegis & Rapier only",
-				"Early Game only",
-				"Caster & Support items only",
-				"Weapon items only",
-				"Armor & Defensive items only"
+				"Aegis & Rapier",
+				"Early Game",
+				"Caster & Support Only",
+				"Weapons Only",
+				"Armor & Defensive Only"
 			]
 		}
 	}
