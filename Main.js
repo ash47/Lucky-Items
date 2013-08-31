@@ -19,25 +19,25 @@ var g_plugin = {
     },
 	url: "http://www.d2ware.net/",
 	license: "http://www.gnu.org/licenses/gpl.html",
-	developer: false // Developer Mode
+	developer: false // Developer Mode (useful for plugin strength testing)
 };
 
-var DEBUG = false;
+var DEBUG = false; // server.print()'s everywhere
 
 // ==========================================
 // General Setup
 // ==========================================
 
-var timers = require('timers');				  // Built-In Timers Library
-var sprintf = require('sprintf.js').vsprintf; // Sprintf Library for dynamic strings
-var util = require('util.js');				  // Load Utility Library
-// var enchants = require('enchantments.js'); // Load the item enchantments
+var timers = require('timers');					// Built-In Timers Library
+var sprintf = require('sprintf.js').vsprintf;	// Sprintf Library for dynamic strings
+var util = require('util.js');					// Load Utility Library
+// var enchants = require('enchantments.js');	// Load the item enchantments
 
 // Constants
 var HERO_INVENTORY_BEGIN = 0;
 var HERO_INVENTORY_END = 5; // END at [0, 1, 2, 3,  4,  5] - 6 SLOTS
 var HERO_STASH_BEGIN = 6; // BEGIN at [6, 7, 8, 9, 10, 11] - 6 SLOTS
-var HERO_STASH_END = 13;
+var HERO_STASH_END = 11;
 var UNIT_LIFE_STATE_ALIVE = 0;
 var TEAM_RADIANT = dota.TEAM_RADIANT;
 var TEAM_DIRE = dota.TEAM_DIRE;
@@ -52,18 +52,18 @@ var settings = {
 	mapLoaded: false,			// did the map start?
 	pluginLoaded: false,		// did plugin initialize?
 	pluginHalted: false,		// did we tell our plugin to stop dispensing items?
-	pluginTime: 0,				// keep track of passed in-game seconds
-	gamePhase: 1,				// current match phase. 1 - Early Game; 2 - MidGame; 3 - Late Game
+	timeElapsed: 0,				// keep track of passed in-game seconds
 	leadTime: ['5:00'],			// lead item drop : STATE_GAME_IN_PROGRESS
 	nextBase: ['5:00'],			// subsequent drops after the lead
-	timeInSeconds: 0,			// --
-	gameTime: null,				// keeps track of the game frame time
+	shakeTime: 4,				// shake shake shake!
+	gameTime: null,				// keeps track of the game time
 	currentWave: 0,				// keeps track of the current item wave
-	waveLimit: 15,				// how many item waves will happen
+	waveLimit: -1,				// how many item waves will happen
 	playerList: [],				// which players will receive an item
 	playersBarredFromDrops: [], // playerID is in here, they will receive no items
 	dispenseTimeout: 0.6,		// how many seconds to wait before giving each player their items
 	itemDropFavorPercent: 30,   // percentage chance to get a favored item after a low one
+	gamePhase: 1,				// current match phase. 1 - Early Game; 2 - MidGame; 3 - Late Game
 	maxTries: 8,				// prevent an infinite search loop, break
 	maxTriesLoot: [				// we can't find our player an item, default to these
 		"item_cheese",
@@ -108,7 +108,7 @@ var settings = {
 	// Plugin chat drop notifications display
 	dropNotifications: {
 		lead: "\x02%s\x01",		// Lead item time (NOTE: Always enabled)
-		enabled: true,			// Enable / disable subsequent notifications
+		enabled: false,			// Enable / disable subsequent notifications
 		timeThreshold: 60,		// Below this time threshold (in seconds), disable them
 		subsequent: "%s",		// Subsequent item time
 	},
@@ -411,22 +411,20 @@ timers.setInterval(function() {
 		settings.pluginLoaded = true;
 
 		// Randomly select our initial drop time
-		var select = settings.leadTime[util.getRandomNumber(settings.leadTime.length)];
+		var selected = settings.leadTime[util.getRandomNumber(settings.leadTime.length)];
+		if (DEBUG) server.print("First drop: " + selected);
 
 		// Convert the time into seconds
-		var convert = util.convertMinutesToSeconds(select);
+		var converted = util.convertMinutesToSeconds(selected);
+		if (DEBUG) server.print("First drop converted: " + converted);
 
-		// Calculate additional shake seconds
-		var randomize = util.getRandomNumber( util.flipNumber( settings.shakeTime ) );
-
-		// Set our next time based off of the first
-		settings.nextTime = convert + randomize;
-
-		// To communicate with the game timer
-		settings.gameTime = game.rules.props.m_fGameTime + settings.nextTime;
+		// To communicate with the game timer when the next drop will be exactly
+		settings.gameTime = game.rules.props.m_fGameTime + converted;
+		if (DEBUG) server.print("First drop game time: " + settings.gameTime);
 
 		// Tell the players when the next drop is
-		printToAll(settings.dropNotifications.lead, [select]);
+		var firstDrop = util.convertSecondsToMinutes( Math.floor( settings.gameTime ) );
+		printToAll(settings.dropNotifications.lead, [firstDrop]);
 
 		// Re-build our item table if it does not exist
 		if (settings.itemTable.instance === null) {
@@ -460,21 +458,21 @@ timers.setInterval(function() {
 		settings.currentWave += 1;
 
 		// Select our next base time.
-		var select = settings.nextBase[util.getRandomNumber(settings.nextBase.length)];
+		var selected = settings.nextBase[util.getRandomNumber(settings.nextBase.length)];
 
 		// Convert the time into seconds
-		var convert = util.convertMinutesToSeconds(select);
+		var converted = util.convertMinutesToSeconds(selected);
 
 		// Calculate additional shake seconds
-		var randomize = util.getRandomNumber( util.flipNumber(settings.shakeTime) );
+		// var randomized = util.getRandomNumber( util.flipNumber( settings.shakeTime ) );
 
-		var increment = convert + randomize;
+		var increment = converted; // + randomized;
 
-		settings.nextTime += increment;
 		settings.gameTime += increment;
 
 		if (settings.dropNotifications.enabled) {
-			shakeTime = ulti.convertSecondsToMinutes(settings.nextTime + util.getRandomNumber( util.flipNumber(settings.shakeTime) ));
+			var step1 = Math.floor(settings.gameTime);
+			shakeTime = util.convertSecondsToMinutes(step1 + util.getRandomNumber( util.flipNumber( settings.shakeTime ) ) );
 			printToAll(settings.dropNotifications.subsequent, [shakeTime]);
 		}
 
@@ -493,7 +491,7 @@ timers.setInterval(function() {
 			printToAll("End", []);
 		}
 	}
-}, 150);
+}, 100);
 
 // ==========================================
 // Player Inventory Queue
@@ -1056,8 +1054,6 @@ plugin.get('LobbyManager', function(obj){
 
 		var s = util.convertMinutesToSeconds(optionTime);
 
-		settings.timeInSeconds = s;
-
 		if (s < settings.soundEffects.timeThreshold)
 			settings.soundEffects.enabled = false;
 
@@ -1108,13 +1104,13 @@ plugin.get('LobbyManager', function(obj){
 		case "10 Waves":
 			settings.waveLimit = 10;
 			break;
-		default:
 		case "15 Waves":
 			settings.waveLimit = 15;
 			break;
 		case "20 Waves":
 			settings.waveLimit = 20;
 			break;
+			default:
 		case "∞ Waves":
 			settings.waveLimit = -1;
 			break;
@@ -1225,7 +1221,8 @@ function buildItemTable(option) {
 
 	// Setup our enchantment percentage
 	if (enchanter.enabled) {
-		enchanter.percentage = (40 + (settings.timeInSeconds / 13) );
+		var time = util.convertMinutesToSeconds( settings.nextBase[ util.getRandomNumber( settings.nextBase.length ) ] );
+		enchanter.percentage = (40 + (time / 13) );
 	}
 }
 
