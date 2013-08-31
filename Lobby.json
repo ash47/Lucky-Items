@@ -23,6 +23,7 @@
 				"1:00",
 				"0:45",
 				"0:30",
+				"0:15",
 				"5:15",
 				"5:30",
 				"5:45",
@@ -47,6 +48,8 @@
 		"Amount": {
 			"type": "select",
 			"options": [
+				"∞ Waves",
+				"20 Waves",
 				"15 Waves",
 				"10 Waves",
 				"9 Waves",
@@ -57,20 +60,17 @@
 				"4 Waves",
 				"3 Waves",
 				"2 Waves",
-				"1 Wave",
-				"20 Waves",
-				"∞ Waves"
+				"1 Wave"
 			]
 		},
 		"Selection": {
 			"type": "select",
 			"options": [
-				"Greater than 1,000g",
-				"Greater than 275g",
-				"Greater than 1,500g",
-				"Greater than 2,000g",
-				"Greater than 2,500g",
-				"Greater than 3,000g",
+				"> 1,000g",
+				"> 275g",
+				"> 1,500g",
+				"> 2,000g",
+				"> 2,500g",
 				"Aegis & Rapier",
 				"Early Game",
 				"Caster & Support Only",

@@ -1,7 +1,3 @@
-// Libraries
-var timers = require('timers.js');
-var sprintf = require('sprintf.js').vsprintf;
-
 // ==========================================
 // Plugin Information - READ ONLY
 // ==========================================
@@ -10,7 +6,7 @@ var g_plugin = {
 	prefix: "[LI]",
 	author: "koone",
 	description: "Gives players weighted random items.",
-	version: "1.3.3",
+	version: "1.3.5",
 	credits: {
 		ocnyd6: "making the Fighting Chance plugin",
         fr0sZ: "asking thought-provoking scenario questions",
@@ -26,27 +22,33 @@ var g_plugin = {
 	developer: false // Developer Mode
 };
 
+var DEBUG = false;
+
 // ==========================================
 // General Setup
 // ==========================================
 
+var timers = require('timers');				  // Built-In Timers Library
+var sprintf = require('sprintf.js').vsprintf; // Sprintf Library for dynamic strings
+var util = require('util.js');				  // Load Utility Library
+// var enchants = require('enchantments.js'); // Load the item enchantments
+
 // Constants
 var HERO_INVENTORY_BEGIN = 0;
-var HERO_INVENTORY_END = 5;
-var HERO_STASH_BEGIN = 6;
-var HERO_STASH_END = 12;
+var HERO_INVENTORY_END = 5; // END at [0, 1, 2, 3,  4,  5] - 6 SLOTS
+var HERO_STASH_BEGIN = 6; // BEGIN at [6, 7, 8, 9, 10, 11] - 6 SLOTS
+var HERO_STASH_END = 13;
 var UNIT_LIFE_STATE_ALIVE = 0;
 var TEAM_RADIANT = dota.TEAM_RADIANT;
 var TEAM_DIRE = dota.TEAM_DIRE;
 
 // Variables
-var playerManager;
 var playerProps = [];
 
 // ==========================================
-// Lucky Items Setup
+// Lucky Items Settings
 // ==========================================
-var li = {
+var settings = {
 	mapLoaded: false,			// did the map start?
 	pluginLoaded: false,		// did plugin initialize?
 	pluginHalted: false,		// did we tell our plugin to stop dispensing items?
@@ -54,8 +56,7 @@ var li = {
 	gamePhase: 1,				// current match phase. 1 - Early Game; 2 - MidGame; 3 - Late Game
 	leadTime: ['5:00'],			// lead item drop : STATE_GAME_IN_PROGRESS
 	nextBase: ['5:00'],			// subsequent drops after the lead
-	shakeTime: 6,				// random x seconds off designated drop times
-	nextTime: 0,				// when our next drop will occur
+	timeInSeconds: 0,			// --
 	gameTime: null,				// keeps track of the game frame time
 	currentWave: 0,				// keeps track of the current item wave
 	waveLimit: 15,				// how many item waves will happen
@@ -65,7 +66,8 @@ var li = {
 	itemDropFavorPercent: 30,   // percentage chance to get a favored item after a low one
 	maxTries: 8,				// prevent an infinite search loop, break
 	maxTriesLoot: [				// we can't find our player an item, default to these
-		"item_cheese"
+		"item_cheese",
+		"item_aegis"
 	],
 	reLootPercentage: 75,		// a percentage chance to random twice on specific items
 	reLootTable: [				// items to perform another random on.
@@ -77,7 +79,7 @@ var li = {
 		"item_aegis",
 		"item_cheese"
 	],
-	doNotPutInStash: [			// a bug with the aegis, as you can't remove it once it's in your stash
+	doNotPutInStash: [			//
 		"item_aegis"
 	],
 	// This is the inventory queue to manage items when a player cannot be given more items.
@@ -95,16 +97,19 @@ var li = {
 	// Plugin sound effects that occur when an item is randomed to a player or other trigger events.
 	soundEffects: {
 		enabled: true,			// Enabled / disabled
-		timeThreshold: 160,		// Below this time (in seconds) threshold, disable them
+		timeThreshold: 60,		// Below this time (in seconds) threshold, disable them
 		list: [					// List of sound effects to use
 			"ui/npe_objective_given.wav"
+		],
+		enchantment: [
+			"ui/inventory/treasure_reveal.wav"
 		]
 	},
 	// Plugin chat drop notifications display
 	dropNotifications: {
 		lead: "\x02%s\x01",		// Lead item time (NOTE: Always enabled)
 		enabled: true,			// Enable / disable subsequent notifications
-		timeThreshold: 120,		// Below this time threshold (in seconds), disable them
+		timeThreshold: 60,		// Below this time threshold (in seconds), disable them
 		subsequent: "%s",		// Subsequent item time
 	},
 	// Properties of the generated base item table
@@ -144,38 +149,13 @@ var li = {
 		// all other possible dagon rolls are excluded, including a dagon 5.
 		componentExclude: keyvalue.parseKVFile("item_component_exclusion_list.kv")
 	},
-	// This is the plugin item trash manager, it looks at all the items it has given to each player,
-	// and cleans up all of them that are not in their inventory.
-	trashManager: {
-		enabled: false,			// Enable/disable the trash manager
-		cleanAtXWave: 5,		// Cleanup every X item wave
-		cleaned: false,			// Did the plugin perform a cleanup?
-		notice: {
-			active: "Sweeping unused items."
-		}
-	},
 	// These are the plugin addons. They are added onto the base and provide improved functionality.
 	// Plugin addons can be disabled, and the base plugin still functions normally without their intended benefits.
 	addons: {
-		// Addon version: 1.0.0
-		// Buys a courier for each team if they don't have one by the end of the pre-game phase.
-		donkey: {
+		enchanter: {
 			enabled: false,
-			loaded: false,
-			radiant: {
-				courier: false,
-				controlMask: 0,
-				entityID: null,
-				spawnLocation: {'x': -7156, 'y': -6700, 'z': 270}
-			},
-			dire: {
-				courier: false,
-				controlMask: 0,
-				entityID: null,
-				spawnLocation: {'x': 7038, 'y': 6422, 'z': 263}
-			}
+			percentage: 0
 		},
-		// Addon version: 1.0.0
 		// Tailors loot on a per-hero/ability basis during plugin initialization.
 		wardrobe: {
 			enabled: true,
@@ -219,30 +199,11 @@ var li = {
 				scepterUpgrade: 500,
 				attributePrimary: 10 // (added weight to, and subtracted weights from others)
 			}
-		},
-		// Addon Description: Release Version 1.0.0
-		// Currently watches on: Kills
-		// Watches each team and adjusts item weights based on performance
-		rubberband: {
-			enabled: false,
-			killsItemTableThresholdMin: 2, // Kill difference threshold for poor items
-			killsItemTableThresholdMax: 8,
-			TEAM_RADIANT: {
-				modifier: 0,
-				usePoorTable: false,
-				kills: 0
-			},
-			TEAM_DIRE: {
-				modifier: 0,
-				usePoorTable: false,
-				kills: 0
-			}
 		}
 	}
 };
-var donkey = li.addons.donkey;
-var wardrobe = li.addons.wardrobe;
-var rubberband = li.addons.rubberband;
+var enchanter = settings.addons.enchanter;
+var wardrobe = settings.addons.wardrobe;
 
 var baseItemTable = [
   // Item Classname: IN-USE
@@ -262,10 +223,21 @@ var baseItemTable = [
   //    2 - Agility
   //    4 - Intelligence
   //
-  // Shop Mask:
-  //    1 - Caster/Support Items
-  //    2 - Weapons
-  //    4 - Armor
+  // Item Bonuses:
+  //	1 - Adds +damage
+  //	2 - Adds +attack speed
+  //	4 - Adds +movement speed
+  //	8 - Adds +evasion
+  //	16 - Adds +stats
+  //	32 - Adds +armor
+  //	64 - Adds +health
+  //	128 - Adds +mana
+  //	256 - Adds +manaregen
+  //	512 - Adds +hpregen
+  //	1024 - Adds +lifesteal
+  //
+  //	1024 - Adds +spell resistance
+  //	2048 - Adds Magic Immunity
   //
   // Hero Role:
   //    1 - Lane Support
@@ -283,202 +255,119 @@ var baseItemTable = [
   //    4096 - Support
   //
   // Below is the array index, and what each index contains.
-  // [0            1,           2,     3,         4,             5,      ]
-  // ["Classname", weight(0-∞), price, gamePhase, attributeMask, shopMask], // Weapon Name (price)
+  // [0            1,           2,     3,         4,             5,            6]
+  // ["Classname", weight(0-∞), price, gamePhase, attributeMask, itemBonus, hasActive(bool)], // Weapon Name (price)
   //
-  ["item_aegis",                   5,    0, 0, -1, -1], // Aegis of the Immortal (0g)
-  ["item_cheese",                  5,    0, 0, -1, -1], // Cheese (0g)
+  ["item_aegis",                   5,    0, 0, -1, -1, 0], // Aegis of the Immortal (0g)
+  ["item_cheese",                  5,    0, 0, -1, -1, 0], // Cheese (0g)
   //
-  ["item_orb_of_venom",          300,  275, 1, 0, 0], // Orb of Venom (275g)
-  ["item_null_talisman",         291,  470, 1, 4, 0], // Null Talisman (470g)
-  ["item_wraith_band",           291,  485, 1, 2, 0], // Wraith Band (485g)
-  ["item_magic_wand",            290,  509, 1, 7, 0], // Magic Wand (509g)
-  ["item_bracer",                289,  525, 1, 1, 0], // Bracer (525g)
-  ["item_poor_mans_shield",      288,  550, 1, 3, 0], // Poor Man's Shield (550g)
-  ["item_headdress",             286,  603, 1, 4, 0], // Headdress (603g)
-  ["item_soul_ring",             278,  800, 1, 4, 1], // Soul Ring (800g)
-  ["item_buckler",               278,  803, 1, 4, 0], // Buckler (803g)
-  ["item_urn_of_shadows",        275,  875, 1, 1, 7], // Urn of Shadows (875g)
-  ["item_void_stone",            275,  875, 1, 0, 1], // Void Stone (875g)
-  ["item_ring_of_health",        275,  875, 1, 0, 4], // Ring of Health (875g)
-  ["item_helm_of_iron_will",     272,  950, 1, 0, 4], // Helm of Iron Will (950g)
-  ["item_tranquil_boots",        271,  975, 1, 0, 0], // Tranquil Boots (975g)
-  ["item_ring_of_aquila",        271,  985, 1, 0, 1], // Ring of Aquila (985g)
-  ["item_ogre_axe",              270, 1000, 1, 1, 4], // Ogre Axe (1,000g)
-  ["item_blade_of_alacrity",     270, 1000, 1, 2, 2], // Blade of Alacrity (1,000g)
-  ["item_staff_of_wizardry",     270, 1000, 1, 4, 1], // Staff of Wizardry (1,000g)
-  ["item_energy_booster",        270, 1000, 1, 4, 1], // Energy Booster (1,000g)
-  ["item_medallion_of_courage",  267, 1075, 1, 0, 2], // Medallion of Courage (1,075g)
-  ["item_vitality_booster",      266, 1100, 1, 7, 4], // Vitality Booster (1,100g)
-  ["item_point_booster",         262, 1200, 1, 7, 1], // Point Booster (1,200g)
-  ["item_broadsword",            262, 1200, 1, 0, 2], // Broadsword (1,200g)
-  ["item_phase_boots",           256, 1350, 1, 0, 2], // Phase Boots (1,350g)
-  ["item_platemail",             254, 1400, 1, 0, 4], // Platemail (1,400g)
-  ["item_claymore",              254, 1400, 1, 0, 2], // Claymore (1,400g)
-  ["item_power_treads",          254, 1400, 1, 7, 6], // Power Treads (1,400g)
-  ["item_arcane_boots",          252, 1450, 1, 4, 1], // Arcane Boots (1,450g)
-  ["item_javelin",               250, 1500, 1, 0, 2], // Javelin (1,500g)
-  ["item_ghost",                 246, 1600, 1, 0, 1], // Ghost Scepter (1,600g)
-  ["item_shadow_amulet",         246, 1600, 1, 0, 0], // Shadow Amulet (1,600g)
-  ["item_mithril_hammer",        246, 1600, 1, 0, 2], // Mithril Hammer (1,600g)
-  ["item_oblivion_staff",        243, 1675, 1, 0, 1], // Oblivion Staff (1,675g)
-  ["item_pers",                  240, 1750, 1, 0, 1], // Perseverance (1,750g)
-  ["item_ancient_janggo",        239, 1775, 1, 7, 7], // Drums of Endurance (1,775g)
-  ["item_talisman_of_evasion",   119, 1800, 2, 0, 4], // Talisman of Evasion (1,800g)
-  ["item_helm_of_the_dominator", 118, 1850, 2, 3, 2], // Helm of the Dominator (1,850g)
-  ["item_hand_of_midas",         234, 1900, 1, 0, 2], // Hand of Midas (1,900g)
-  ["item_mask_of_madness",       117, 1900, 2, 3, 2], // Mask of Madness (1,900g)
-  ["item_vladmir",               114, 2050, 2, 3, 2], // Vladmir's Offering (2,050g)
-  ["item_yasha",                 114, 2050, 2, 2, 2], // Yasha (2,050g)
-  ["item_sange",                 114, 2050, 2, 1, 2], // Sange (2,050g)
-  ["item_ultimate_orb",          113, 2100, 2, 7, 3], // Ultimate Orb (2,100g)
-  ["item_hyperstone",            113, 2100, 2, 3, 2], // Hyperstone (2,100g)
-  ["item_hood_of_defiance",      113, 2125, 2, 0, 1], // Hood of Defiance (2,125g)
-  ["item_blink",                 224, 2150, 1, 0, 7], // Blink Dagger (2,150g)
-  ["item_lesser_crit",           112, 2150, 2, 2, 2], // Crystalys (2,150g)
-  ["item_blade_mail",            111, 2200, 2, 1, 4], // Blade Mail (2,200g)
-  ["item_vanguard",              111, 2225, 2, 0, 4], // Vanguard (2,225g)
-  ["item_force_staff",           220, 2250, 1, 4, 7], // Force Staff (2,250g)
-  ["item_mekansm",               109, 2306, 2, 4, 1], // Mekansm (2,306g)
-  ["item_demon_edge",            107, 2400, 2, 3, 2], // Demon Edge (2,400g)
-  ["item_travel_boots",           71, 2450, 3, 0, 7], // Boots of Travel (2,450g)
-  ["item_armlet",                103, 2600, 2, 1, 2], // Armlet of Mordiggan (2,600g)
-  ["item_veil_of_discord",       102, 2650, 2, 0, 1], // Veil of Discord (2,650g)
-  ["item_mystic_staff",          101, 2700, 2, 4, 1], // Mystic Staff (2,700g)
-  ["item_necronomicon",          101, 2700, 2, 5, 1], // Necronomicon 1 (2,700g)
-  ["item_maelstrom",             101, 2700, 2, 3, 2], // Maelstrom (2,700g)
-  ["item_cyclone",               101, 2700, 2, 4, 1], // Eul's Scepter of Divinity (2,700g)
-  ["item_dagon",                 100, 2730, 2, 5, 1], // Dagon 1 (2,730g)
-  ["item_basher",                 96, 2950, 2, 1, 2], // Skull Basher (2,950g)
-  ["item_invis_sword",            95, 3000, 2, 7, 2], // Shadow Blade (3,000g)
-  ["item_rod_of_atos",            62, 3100, 3, 4, 1], // Rod of Atos (3,100g)
-  ["item_reaver",                 61, 3200, 3, 1, 4], // Reaver (3,200g)
-  ["item_soul_booster",           59, 3300, 3, 7, 1], // Soul Booster (3,300g)
-  ["item_eagle",                  59, 3300, 3, 2, 2], // Eaglesong (3,300g)
-  ["item_diffusal_blade",         59, 3300, 3, 3, 2], // Diffusal Blade (3,300g)
-  ["item_pipe",                   55, 3628, 3, 5, 1], // Pipe of Insight (3,628g)
-  ["item_relic",                  53, 3800, 3, 7, 2], // Sacred Relic (3,800g)
-  ["item_heavens_halberd",        52, 3850, 3, 1, 2], // Heaven's Halberd (3,850g)
-  ["item_black_king_bar",         51, 3900, 3, 7, 4], // Black King Bar (3,900g)
-  ["item_necronomicon_2",         51, 3950, 3, 0, 1], // Necronomicon 2 (3,950g)
-  ["item_dagon_2",                50, 3980, 3, 0, 1], // Dagon 2 (3,980g)
-  ["item_desolator",              49, 4100, 3, 3, 2], // Desolator (4,100g)
-  ["item_sange_and_yasha",        49, 4100, 3, 3, 2], // Sange & Yasha (4,100g)
-  ["item_orchid",                 48, 4125, 3, 4, 1], // Orchid Malevolence (4,125g)
-  ["item_diffusal_blade_2",       48, 4150, 3, 0, 2], // Diffusal Blade 2 (4,150g)
-  ["item_ultimate_scepter",       47, 4200, 3, 7, 7], // Aghanim's Scepter (4,200g)
-  ["item_bfury",                  45, 4350, 3, 3, 2], // Battle Fury (4,350g)
-  ["item_shivas_guard",           41, 4700, 3, 4, 4], // Shiva's Guard (4,700g)
-  ["item_ethereal_blade",         38, 4900, 3, 6, 2], // Ethereal Blade (4,900g)
-  ["item_bloodstone",             36, 5050, 3, 4, 5], // Bloodstone (5,050g)
-  ["item_manta",                  36, 5050, 3, 2, 2], // Manta Style (5,050g)
-  ["item_radiance",               35, 5150, 3, 7, 2], // Radiance (5,150g)
-  ["item_sphere",                 34, 5175, 3, 7, 5], // Linken's Sphere (5,175g)
-  ["item_necronomicon_3",         34, 5200, 3, 0, 1], // Necronomicon 3 (5,200g)
-  ["item_dagon_3",                34, 5230, 3, 0, 1], // Dagon 3 (5,230g)
-  ["item_refresher",              34, 5300, 3, 5, 1], // Refresher Orb (5,300g)
-  ["item_assault",                32, 5350, 3, 3, 4], // Assault Cuirass (5,350g)
-  ["item_mjollnir",               31, 5400, 3, 3, 2], // Mjollnir (5,400g)
-  ["item_monkey_king_bar",        31, 5400, 3, 3, 2], // Monkey King Bar (5,400g)
-  ["item_heart",                  30, 5500, 3, 7, 4], // Heart of Terrasque (5,500g)
-  ["item_greater_crit",           29, 5550, 3, 3, 2], // Daedalus (5,550g)
-  ["item_skadi",                  28, 5675, 3, 7, 3], // Eye of Skadi (5,675g)
-  ["item_sheepstick",             28, 5675, 3, 4, 1], // Scythe of Vyse (5,675g)
-  ["item_butterfly",              23, 6000, 3, 2, 2], // Butterfly (6,000g)
-  ["item_satanic",                21, 6150, 3, 3, 2], // Satanic (6,150g)
-  ["item_rapier",                 21, 6200, 3, 0, 2], // Divine Rapier (6,200g)
-  ["item_dagon_4",                17, 6480, 3, 0, 1], // Dagon 4 (6,480g)
-  ["item_abyssal_blade",          13, 6750, 3, 1, 2], // Abyssal Blade (6,750g)
-  ["item_dagon_5",                10, 7730, 3, 0, 1], // Dagon 5 (7,730g)
+  ["item_orb_of_venom",          300,  275, 1, 0, 0, 0], // Orb of Venom (275g)
+  ["item_null_talisman",         291,  470, 1, 4, 0, 0], // Null Talisman (470g)
+  ["item_wraith_band",           291,  485, 1, 2, 0, 0], // Wraith Band (485g)
+  ["item_magic_wand",            290,  509, 1, 7, 0, 0], // Magic Wand (509g)
+  ["item_bracer",                289,  525, 1, 1, 0, 0], // Bracer (525g)
+  ["item_poor_mans_shield",      288,  550, 1, 3, 0, 0], // Poor Man's Shield (550g)
+  ["item_headdress",             286,  603, 1, 4, 0, 0], // Headdress (603g)
+  ["item_soul_ring",             278,  800, 1, 4, 1, 1], // Soul Ring (800g)
+  ["item_buckler",               278,  803, 1, 4, 0, 1], // Buckler (803g)
+  ["item_urn_of_shadows",        275,  875, 1, 1, 7, 1], // Urn of Shadows (875g)
+  ["item_void_stone",            275,  875, 1, 0, 1, 0], // Void Stone (875g)
+  ["item_ring_of_health",        275,  875, 1, 0, 4, 0], // Ring of Health (875g)
+  ["item_helm_of_iron_will",     272,  950, 1, 0, 4, 0], // Helm of Iron Will (950g)
+  ["item_tranquil_boots",        271,  975, 1, 0, 0, 1], // Tranquil Boots (975g)
+  ["item_ring_of_aquila",        271,  985, 1, 0, 1, 0], // Ring of Aquila (985g)
+  ["item_ogre_axe",              270, 1000, 1, 1, 4, 0], // Ogre Axe (1,000g)
+  ["item_blade_of_alacrity",     270, 1000, 1, 2, 2, 0], // Blade of Alacrity (1,000g)
+  ["item_staff_of_wizardry",     270, 1000, 1, 4, 1, 0], // Staff of Wizardry (1,000g)
+  ["item_energy_booster",        270, 1000, 1, 4, 1, 0], // Energy Booster (1,000g)
+  ["item_medallion_of_courage",  267, 1075, 1, 0, 2, 1], // Medallion of Courage (1,075g)
+  ["item_vitality_booster",      266, 1100, 1, 7, 4, 0], // Vitality Booster (1,100g)
+  ["item_point_booster",         262, 1200, 1, 7, 1, 0], // Point Booster (1,200g)
+  ["item_broadsword",            262, 1200, 1, 0, 2, 0], // Broadsword (1,200g)
+  ["item_phase_boots",           256, 1350, 1, 0, 2, 1], // Phase Boots (1,350g)
+  ["item_platemail",             254, 1400, 1, 0, 4, 0], // Platemail (1,400g)
+  ["item_claymore",              254, 1400, 1, 0, 2, 0], // Claymore (1,400g)
+  ["item_power_treads",          254, 1400, 1, 7, 6, 0], // Power Treads (1,400g)
+  ["item_arcane_boots",          252, 1450, 1, 4, 1, 1], // Arcane Boots (1,450g)
+  ["item_javelin",               250, 1500, 1, 0, 2, 0], // Javelin (1,500g)
+  ["item_ghost",                 246, 1600, 1, 0, 1, 1], // Ghost Scepter (1,600g)
+  ["item_shadow_amulet",         246, 1600, 1, 0, 0, 1], // Shadow Amulet (1,600g)
+  ["item_mithril_hammer",        246, 1600, 1, 0, 2, 0], // Mithril Hammer (1,600g)
+  ["item_oblivion_staff",        243, 1675, 1, 0, 1, 0], // Oblivion Staff (1,675g)
+  ["item_pers",                  240, 1750, 1, 0, 1, 0], // Perseverance (1,750g)
+  ["item_ancient_janggo",        239, 1775, 1, 7, 0, 1], // Drums of Endurance (1,775g)
+  ["item_talisman_of_evasion",   119, 1800, 2, 0, 4, 0], // Talisman of Evasion (1,800g)
+  ["item_helm_of_the_dominator", 118, 1850, 2, 3, 2, 1], // Helm of the Dominator (1,850g)
+  ["item_hand_of_midas",         234, 1900, 1, 0, 2, 1], // Hand of Midas (1,900g)
+  ["item_mask_of_madness",       117, 1900, 2, 3, 2, 1], // Mask of Madness (1,900g)
+  ["item_vladmir",               114, 2050, 2, 3, 1, 0], // Vladmir's Offering (2,050g)
+  ["item_yasha",                 114, 2050, 2, 2, 2, 0], // Yasha (2,050g)
+  ["item_sange",                 114, 2050, 2, 1, 2, 0], // Sange (2,050g)
+  ["item_ultimate_orb",          113, 2100, 2, 7, 3, 0], // Ultimate Orb (2,100g)
+  ["item_hyperstone",            113, 2100, 2, 3, 2, 0], // Hyperstone (2,100g)
+  ["item_hood_of_defiance",      113, 2125, 2, 0, 1, 0], // Hood of Defiance (2,125g)
+  ["item_blink",                 224, 2150, 1, 0, 7, 1], // Blink Dagger (2,150g)
+  ["item_lesser_crit",           112, 2150, 2, 2, 2, 0], // Crystalys (2,150g)
+  ["item_blade_mail",            111, 2200, 2, 1, 4, 1], // Blade Mail (2,200g)
+  ["item_vanguard",              111, 2225, 2, 0, 4, 0], // Vanguard (2,225g)
+  ["item_force_staff",           220, 2250, 1, 4, 7, 1], // Force Staff (2,250g)
+  ["item_mekansm",               109, 2306, 2, 4, 1, 1], // Mekansm (2,306g)
+  ["item_demon_edge",            107, 2400, 2, 3, 2, 0], // Demon Edge (2,400g)
+  ["item_travel_boots",           71, 2450, 3, 0, 7, 1], // Boots of Travel (2,450g)
+  ["item_armlet",                103, 2600, 2, 1, 2, 1], // Armlet of Mordiggan (2,600g)
+  ["item_veil_of_discord",       102, 2650, 2, 0, 1, 1], // Veil of Discord (2,650g)
+  ["item_mystic_staff",          101, 2700, 2, 4, 1, 0], // Mystic Staff (2,700g)
+  ["item_necronomicon",          101, 2700, 2, 5, 1, 1], // Necronomicon 1 (2,700g)
+  ["item_maelstrom",             101, 2700, 2, 3, 2, 0], // Maelstrom (2,700g)
+  ["item_cyclone",               101, 2700, 2, 4, 1, 1], // Eul's Scepter of Divinity (2,700g)
+  ["item_dagon",                 100, 2730, 2, 5, 1, 1], // Dagon 1 (2,730g)
+  ["item_basher",                 96, 2950, 2, 1, 2, 0], // Skull Basher (2,950g)
+  ["item_invis_sword",            95, 3000, 2, 7, 2, 1], // Shadow Blade (3,000g)
+  ["item_rod_of_atos",            62, 3100, 3, 4, 1, 1], // Rod of Atos (3,100g)
+  ["item_reaver",                 61, 3200, 3, 1, 4, 0], // Reaver (3,200g)
+  ["item_soul_booster",           59, 3300, 3, 7, 1, 0], // Soul Booster (3,300g)
+  ["item_eagle",                  59, 3300, 3, 2, 2, 0], // Eaglesong (3,300g)
+  ["item_diffusal_blade",         59, 3300, 3, 3, 2, 1], // Diffusal Blade (3,300g)
+  ["item_pipe",                   55, 3628, 3, 5, 1, 1], // Pipe of Insight (3,628g)
+  ["item_relic",                  53, 3800, 3, 7, 2, 0], // Sacred Relic (3,800g)
+  ["item_heavens_halberd",        52, 3850, 3, 1, 2, 1], // Heaven's Halberd (3,850g)
+  ["item_black_king_bar",         51, 3900, 3, 7, 4, 1], // Black King Bar (3,900g)
+  ["item_necronomicon_2",         51, 3950, 3, 0, 1, 1], // Necronomicon 2 (3,950g)
+  ["item_dagon_2",                50, 3980, 3, 0, 1, 1], // Dagon 2 (3,980g)
+  ["item_desolator",              49, 4100, 3, 3, 2, 0], // Desolator (4,100g)
+  ["item_sange_and_yasha",        49, 4100, 3, 3, 2, 0], // Sange & Yasha (4,100g)
+  ["item_orchid",                 48, 4125, 3, 4, 1, 1], // Orchid Malevolence (4,125g)
+  ["item_diffusal_blade_2",       48, 4150, 3, 0, 2, 1], // Diffusal Blade 2 (4,150g)
+  ["item_ultimate_scepter",       47, 4200, 3, 7, 7, 0], // Aghanim's Scepter (4,200g)
+  ["item_bfury",                  45, 4350, 3, 3, 2, 0], // Battle Fury (4,350g)
+  ["item_shivas_guard",           41, 4700, 3, 4, 4, 1], // Shiva's Guard (4,700g)
+  ["item_ethereal_blade",         38, 4900, 3, 6, 6, 1], // Ethereal Blade (4,900g)
+  ["item_bloodstone",             36, 5050, 3, 4, 5, 1], // Bloodstone (5,050g)
+  ["item_manta",                  36, 5050, 3, 2, 2, 1], // Manta Style (5,050g)
+  ["item_radiance",               35, 5150, 3, 7, 2, 0], // Radiance (5,150g)
+  ["item_sphere",                 34, 5175, 3, 7, 5, 0], // Linken's Sphere (5,175g)
+  ["item_necronomicon_3",         34, 5200, 3, 0, 1, 1], // Necronomicon 3 (5,200g)
+  ["item_dagon_3",                34, 5230, 3, 0, 1, 1], // Dagon 3 (5,230g)
+  ["item_refresher",              34, 5300, 3, 5, 1, 1], // Refresher Orb (5,300g)
+  ["item_assault",                32, 5350, 3, 3, 4, 0], // Assault Cuirass (5,350g)
+  ["item_mjollnir",               31, 5400, 3, 3, 2, 1], // Mjollnir (5,400g)
+  ["item_monkey_king_bar",        31, 5400, 3, 3, 2, 0], // Monkey King Bar (5,400g)
+  ["item_heart",                  30, 5500, 3, 7, 4, 0], // Heart of Terrasque (5,500g)
+  ["item_greater_crit",           29, 5550, 3, 3, 2, 0], // Daedalus (5,550g)
+  ["item_skadi",                  28, 5675, 3, 7, 3, 0], // Eye of Skadi (5,675g)
+  ["item_sheepstick",             28, 5675, 3, 4, 1, 1], // Scythe of Vyse (5,675g)
+  ["item_butterfly",              23, 6000, 3, 2, 2, 0], // Butterfly (6,000g)
+  ["item_satanic",                21, 6150, 3, 3, 2, 1], // Satanic (6,150g)
+  ["item_rapier",                 21, 6200, 3, 0, 2, 0], // Divine Rapier (6,200g)
+  ["item_dagon_4",                17, 6480, 3, 0, 1, 1], // Dagon 4 (6,480g)
+  ["item_abyssal_blade",          13, 6750, 3, 1, 2, 1], // Abyssal Blade (6,750g)
+  ["item_dagon_5",                10, 7730, 3, 0, 1, 1], // Dagon 5 (7,730g)
 ];
-
-// ==========================================
-// Game Phase Loot Modifier
-// ==========================================
-// timers.setInterval(function() {
-// 	if (li.pluginLoaded) {
-
-// 		li.pluginTime += 1;
-
-// 		switch(li.pluginTime)
-// 		{
-// 			default: break;
-// 			case (li.gamePhase === 1 && li.pluginTime >= 450):
-// 				li.gamePhase = 2;
-// 				break;
-// 			case (li.gamePhase === 2 && li.pluginTime >= 900):
-// 				li.gamePhase = 3;
-// 				break;
-// 		}
-
-// 		if (li.pluginTime % 10 === 0) {
-// 			for (var key in playerProps) {
-// 				var obj = playerProps[key];
-// 				for (var i = 0; i < obj.lootTable.length; ++i) {
-// 					var entry = obj.lootTable[i];
-// 					if (li.gamePhase === 1) {
-// 						if (entry[3] === 1 && entry[1] > 1) {
-// 							entry[1] -= 1;
-// 						}
-// 					}
-// 					else if (li.gamePhase === 2 && entry[3] === 2) {
-// 						entry[1] += 1;
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// }, li.queue.checkXSeconds * 1000);
-
-// ==========================================
-// Player Inventory Queue
-// ==========================================
-function resetQueueReminder() { li.queue.reminded = false; }
-timers.setInterval(function() {
-	if (li.pluginLoaded) {
-		var playerIDs = getConnectedPlayerIDs();
-		if (playerIDs.length === 0)
-			return;
-
-		for (i = 0; i < playerIDs.length; ++i)
-		{
-			var playerID = playerIDs[i];
-			var client = dota.findClientByPlayerID(playerID);
-			if (client === null)
-				continue;
-
-			var hero = client.netprops.m_hAssignedHero;
-			if (hero === null)
-				continue;
-
-			if (playerProps[playerID])
-			{
-				// Take a snapshot of a player's equipment, in-case they disconnect
-				var equipment = getHeroEquipment(hero);
-				playerProps[playerID].snapHeroEquip = equipment;
-
-				var queueLength = playerProps[playerID].queue.length;
-				if (queueLength > 0) {
-					if (isInventoryAvailable(hero) || isStashAvailable(hero)) {
-						giveItemToPlayer(playerProps[playerID].queue[0], playerID);
-						playerProps[playerID].queue.shift();
-					}
-					if (queueLength >= li.queue.remindNItems && !li.queue.reminded) {
-						printToPlayer(playerID, li.queue.notice.reminder, [queueLength]);
-						timers.setTimeout(resetQueueReminder, (li.queue.reminderTimeout * 1000));
-						li.queue.reminded = true;
-					}
-				}
-			}
-		}
-	}
-}, li.queue.checkXSeconds * 1000);
-
 // ==========================================
 // Player Properties & Item Dispenser
 // ==========================================
 timers.setInterval(function() {
-	if (!li.mapLoaded) return;
+	if (!settings.mapLoaded) return;
 
 	var playerIDs = getConnectedPlayerIDs();
 	if (playerIDs.length === 0)
@@ -503,80 +392,9 @@ timers.setInterval(function() {
 				lootTable: null,
 				buildLootTable: true,
 				nextDropFavored: false,
-
+				itemTimeouts: {},
+				activeModifiers: []
 			};
-			var team = getTeamIDFromPlayerID(playerID);
-			if (team === TEAM_RADIANT)
-				donkey.radiant.controlMask += Math.pow(2, playerID);
-			else
-				donkey.dire.controlMask += Math.pow(2, playerID);
-		}
-	}
-
-	// ==========================================
-	// Courier Spawn
-	// ==========================================
-	if (donkey.enabled) {
-		if (gameState === dota.STATE_PRE_GAME && !donkey.loaded) {
-			var donkies = game.findEntitiesByClassname("npc_dota_courier");
-			if (donkies.length > 0) {
-				for (var i = 0; i < donkies.length; ++i) {
-					var courier = donkies[i];
-					if (courier.netprops.m_iTeamNum === TEAM_RADIANT)
-						donkey.radiant.courier = true;
-					else if (courier.netprops.m_iTeamNum === TEAM_DIRE)
-						donkey.dire.courier = true;
-				}
-			}
-			if (!donkey.radiant.courier) {
-				var entity = dota.createUnit("npc_dota_courier", TEAM_RADIANT);
-				var radiMask = 0;
-				for (var key in playerProps) {
-					var obj = playerProps[key];
-					var playerID = obj.ID;
-					var team = getTeamIDFromPlayerID(playerID);
-					if (team === TEAM_RADIANT)
-						radiMask += Math.pow(2, playerID);
-				}
-				entity.netprops.m_iIsControllableByPlayer = radiMask;
-				donkey.radiant.entityID = entity;
-				dota.findClearSpaceForUnit(entity, donkey.radiant.spawnLocation);
-				donkey.radiant.courier = true;
-			}
-			if (!donkey.dire.courier) {
-				var entity = dota.createUnit("npc_dota_courier", TEAM_DIRE);
-				var direMask = 0;
-				for (var key in playerProps) {
-					var obj = playerProps[key];
-					var playerID = obj.ID;
-					var team = getTeamIDFromPlayerID(playerID);
-					if (team === TEAM_DIRE)
-						direMask += Math.pow(2, playerID);
-				}
-				entity.netprops.m_iIsControllableByPlayer = direMask;
-				donkey.dire.entityID = entity;
-				dota.findClearSpaceForUnit(entity, donkey.dire.spawnLocation);
-				donkey.dire.courier = true;
-			}
-			timers.setInterval(function() {
-				// Update control mask throughout the match in-case a new player joins in after initial hero spawn
-				donkey.radiant.controlMask = 0;
-				donkey.dire.controlMask = 0;
-				for (var key in playerProps) {
-					var obj = playerProps[key];
-					var playerID = obj.ID;
-					var team = getTeamIDFromPlayerID(playerID);
-					if (team === TEAM_RADIANT)
-						donkey.radiant.controlMask += Math.pow(2, playerID);
-					else
-						donkey.dire.controlMask += Math.pow(2, playerID);
-				}
-				var courierDire = donkey.dire.entityID;
-				courierDire.netprops.m_iIsControllableByPlayer = donkey.dire.controlMask;
-				var courierRadi = donkey.radiant.entityID;
-				courierRadi.netprops.m_iIsControllableByPlayer = donkey.radiant.controlMask;
-			}, 30000);
-			donkey.loaded = true;
 		}
 	}
 
@@ -587,21 +405,35 @@ timers.setInterval(function() {
 	// Dispenser: Manages item drops
 	// ==========================================
 	var gameTime, increment, time, shakeTime;
-	if (!li.pluginLoaded && gameState === dota.STATE_GAME_IN_PROGRESS) {
+	if (!settings.pluginLoaded && gameState === dota.STATE_GAME_IN_PROGRESS) {
 
-		li.pluginLoaded = true;
-		li.nextTime += convertMinutesToSeconds(li.leadTime[getRandomNumber(li.leadTime.length)]) + getRandomNumber( flipInt(li.shakeTime) );
+		// Load the plugin
+		settings.pluginLoaded = true;
 
-		li.gameTime = game.rules.props.m_fGameTime + li.nextTime;
-		timeFirst = convertSecondsToMinutes(li.nextTime);
-		printToAll(li.dropNotifications.lead, [timeFirst]);
+		// Randomly select our initial drop time
+		var select = settings.leadTime[util.getRandomNumber(settings.leadTime.length)];
+
+		// Convert the time into seconds
+		var convert = util.convertMinutesToSeconds(select);
+
+		// Calculate additional shake seconds
+		var randomize = util.getRandomNumber( util.flipNumber( settings.shakeTime ) );
+
+		// Set our next time based off of the first
+		settings.nextTime = convert + randomize;
+
+		// To communicate with the game timer
+		settings.gameTime = game.rules.props.m_fGameTime + settings.nextTime;
+
+		// Tell the players when the next drop is
+		printToAll(settings.dropNotifications.lead, [select]);
 
 		// Re-build our item table if it does not exist
-		if (li.itemTable.instance === null) {
+		if (settings.itemTable.instance === null) {
 			buildItemTable();
 		}
 
-		if (li.itemTable.useWeights && wardrobe.enabled) {
+		if (settings.itemTable.useWeights && wardrobe.enabled) {
 			var incompatiblePlugins = wardrobe.disallowPlugins;
 			for (i = 0; i < incompatiblePlugins.length; ++i) {
 				if ( plugin.exists(incompatiblePlugins[i]) ) {
@@ -622,81 +454,123 @@ timers.setInterval(function() {
 			}
 		}
 	}
-	if (li.pluginLoaded && game.rules.props.m_fGameTime >= li.gameTime && !li.pluginHalted) {
+	if (settings.pluginLoaded && game.rules.props.m_fGameTime >= settings.gameTime && !settings.pluginHalted) {
 
-		li.currentWave += 1;
+		// New item wave, increment item waves count
+		settings.currentWave += 1;
 
-		increment = convertMinutesToSeconds(li.nextBase[getRandomNumber(li.nextBase.length)]) + getRandomNumber( flipInt(li.shakeTime) );
+		// Select our next base time.
+		var select = settings.nextBase[util.getRandomNumber(settings.nextBase.length)];
 
-		li.nextTime += increment;
-		li.gameTime += increment;
+		// Convert the time into seconds
+		var convert = util.convertMinutesToSeconds(select);
 
-		if (li.dropNotifications.enabled) {
-			shakeTime = convertSecondsToMinutes(li.nextTime + getRandomNumber( flipInt(li.shakeTime) ));
-			printToAll(li.dropNotifications.subsequent, [shakeTime]);
+		// Calculate additional shake seconds
+		var randomize = util.getRandomNumber( util.flipNumber(settings.shakeTime) );
+
+		var increment = convert + randomize;
+
+		settings.nextTime += increment;
+		settings.gameTime += increment;
+
+		if (settings.dropNotifications.enabled) {
+			shakeTime = ulti.convertSecondsToMinutes(settings.nextTime + util.getRandomNumber( util.flipNumber(settings.shakeTime) ));
+			printToAll(settings.dropNotifications.subsequent, [shakeTime]);
 		}
 
 		for (var key in playerProps) {
 			var obj = playerProps[key];
-			if ( li.playersBarredFromDrops.indexOf(obj.ID) > -1)
+			if ( settings.playersBarredFromDrops.indexOf(obj.ID) > -1)
 				continue;
 
-			li.playerList.push(obj.ID);
-		}
-
-		if (rubberband.enabled) {
-			pendulumSwing();
+			settings.playerList.push(obj.ID);
 		}
 
 		generateLoot();
 
-		if (li.currentWave >= li.waveLimit && li.waveLimit > -1) {
-			li.pluginHalted = true;
-			printToAll("Ending item spree", []);
+		if (settings.currentWave >= settings.waveLimit && settings.waveLimit > -1) {
+			settings.pluginHalted = true;
+			printToAll("End", []);
 		}
+	}
+}, 150);
 
-		if (li.trashManager.enabled) {
-			if (li.currentWave % li.trashManager.cleanAtXWave === 0) {
-				cleanupTrash();
+// ==========================================
+// Player Inventory Queue
+// ==========================================
+function resetQueueReminder() { settings.queue.reminded = false; }
+timers.setInterval(function() {
+	if (settings.pluginLoaded) {
+		var playerIDs = getConnectedPlayerIDs();
+		if (playerIDs.length === 0)
+			return;
+
+		for (var i = 0; i < playerIDs.length; ++i)
+		{
+			var playerID = playerIDs[i];
+			var client = dota.findClientByPlayerID(playerID);
+			if (client === null)
+				continue;
+
+			var hero = client.netprops.m_hAssignedHero;
+			if (hero === null)
+				continue;
+
+			if (playerProps[playerID])
+			{
+				// Take a snapshot of a player's equipment, in-case they disconnect
+				var equipment = getHeroEquipmentNames(hero);
+				playerProps[playerID].snapHeroEquip = equipment;
+
+				var queueLength = playerProps[playerID].queue.length;
+				if (queueLength > 0) {
+					if (isInventoryAvailable(hero) || isStashAvailable(hero)) {
+						giveItemToPlayer(playerProps[playerID].queue[0], playerID);
+						playerProps[playerID].queue.shift();
+					}
+					if (queueLength >= settings.queue.remindNItems && !settings.queue.reminded) {
+						printToPlayer(playerID, settings.queue.notice.reminder, [queueLength]);
+						timers.setTimeout(resetQueueReminder, (settings.queue.reminderTimeout * 1000));
+						settings.queue.reminded = true;
+					}
+				}
 			}
 		}
 	}
-}, 100);
+}, settings.queue.checkXSeconds * 1000);
 
 // ==========================================
 // Begin Plugin Functions
 // ==========================================
-function resetGarbageCollector() { li.trashManager.cleaned = false; }
-
-
 function generateLoot() {
-	for (var i = 0; i < li.playerList.length; ++i)
+	for (var i = 0; i < settings.playerList.length; ++i)
 	{
-		var playerID = li.playerList[i];
+		var playerID = settings.playerList[i];
 
 		if (playerProps[playerID]) {
-			var snapLastEquipment = playerProps[playerID].snapHeroEquip;
-			var itemName = getUniqueItemName(playerID, snapLastEquipment);
+			var snappedLastEquipment = playerProps[playerID].snapHeroEquip;
+			var itemEntry = getUniqueItemName(playerID, snappedLastEquipment);
+
+			// Check if the client is present in the game.
+			// If not, his item goes into the queue.
 			var client = dota.findClientByPlayerID(playerID);
+			if (client === null)
+				giveItemToPlayer(itemEntry, playerID, true);
+			else
+				giveItemToPlayer(itemEntry, playerID, false);
 
-			if (client === null) {
-				giveItemToPlayer(itemName, playerID, true);
-			}
-			else {
-				giveItemToPlayer(itemName, playerID);
-				if (li.soundEffects.enabled) {
-					var sound = li.soundEffects.list[getRandomNumber(li.soundEffects.list.length)];
-					dota.sendAudio(client, false, sound);
-				}
-			}
-
-			if (li.reLootTable.indexOf(itemName) > -1 && getRandomNumber(100) <= li.reLootPercentage) {
-				itemName = getUniqueItemName(playerID, snapLastEquipment);
-				giveItemToPlayer(itemName, playerID);
+			// Here we perform our sucky items re-loot chance
+			if (settings.reLootTable.indexOf(itemEntry[0]) > -1 && util.getRandomNumber(100) < settings.reLootPercentage) {
+				itemEntry = getUniqueItemName(playerID, snappedLastEquipment);
+				// Disable sound effects
+				settings.soundEffects.enabled = false;
+				giveItemToPlayer(itemEntry, playerID, false);
+				// Re-enable them
+				settings.soundEffects.enabled = true;
 			}
 		}
 	}
-	li.playerList.length = 0;
+	settings.playerList.length = 0;
 }
 
 function checkForBoots(heroInventory, boots) {
@@ -709,9 +583,8 @@ function checkForBoots(heroInventory, boots) {
 }
 
 function getUniqueItemName(playerID, heroInventory) {
-	var itemNamesGiven = [], rolls = 0, itemName;
 
-	itemNamesGiven = getPlayerProp(playerID, "itemNamesGiven");
+	var itemNamesGiven = getPlayerProp(playerID, "itemNamesGiven");
 
 	var boots = [
 		"item_boots",
@@ -724,28 +597,29 @@ function getUniqueItemName(playerID, heroInventory) {
 
 	var hasBoots = checkForBoots(heroInventory, boots);
 
+	var itemName, itemEntry;
+	var rolls = 0;
 	do
 	{
 		rolls += 1;
 		// Fail-safe so we don't continue rolling infinitely if we can't find an item.
-		if (rolls < li.maxTries) {
-			itemEntry = getRandomLoot(playerID);
+		if ( rolls < settings.maxTries ) {
+			itemEntry = getRandomLoot(playerID, false);
 			itemName = itemEntry[0];
 		}
 		else {
-			itemName = li.maxTriesLoot[getRandomNumber(li.maxTriesLoot.length)];
+			itemEntry = getRandomLoot(playerID, true);
+			itemName = itemEntry[0];
 			break;
 		}
-
-		if ( li.doNotConsiderDupes.indexOf(itemName) > -1 )
+		if ( settings.doNotConsiderDupes.indexOf(itemName) > -1 )
 			break;
-
 	}
 	while ( heroInventory.indexOf(itemName) > -1 || itemNamesGiven.indexOf(itemName) > -1 || (hasBoots && boots.indexOf(itemName) > -1) );
 
-	if (li.doNotConsiderDupes.indexOf(itemName) === -1)
+	if (settings.doNotConsiderDupes.indexOf(itemName) == -1)
 	{
-		if (itemNamesGiven.indexOf(itemName) === -1)
+		if (itemNamesGiven.indexOf(itemName) == -1)
 		{
 			if (playerProps[playerID]) {
 				if (!playerProps[playerID].nextDropFavored)
@@ -758,12 +632,12 @@ function getUniqueItemName(playerID, heroInventory) {
 			itemNamesGiven.push(itemName);
 			setPlayerProp(playerID, "itemNamesGiven", itemNamesGiven);
 
-			if ( typeof li.itemTable.countLimitPerTeam[itemName] === "undefined" )
-				li.itemTable.countLimitPerTeam[itemName] = 0;
+			if ( !settings.itemTable.countLimitPerTeam[itemName] )
+				settings.itemTable.countLimitPerTeam[itemName] = 0;
 
-			li.itemTable.countLimitPerTeam[itemName] += 1;
+			settings.itemTable.countLimitPerTeam[itemName] += 1;
 
-			if ( typeof li.itemTable.limitPerTeam[itemName] !== "undefined" && li.itemTable.countLimitPerTeam[itemName] === li.itemTable.limitPerTeam[itemName]) {
+			if ( settings.itemTable.limitPerTeam[itemName] && settings.itemTable.countLimitPerTeam[itemName] === settings.itemTable.limitPerTeam[itemName]) {
 				var teamID = getTeamIDFromPlayerID(playerID);
 				if (teamID !== null) {
 					var playerIDs = getConnectedPlayerIDsOnTeam(teamID);
@@ -786,7 +660,7 @@ function getUniqueItemName(playerID, heroInventory) {
 					}
 				}
 			}
-			else if (li.itemTable.countLimitPerTeam[itemName] === li.itemTable.maxEachLimit) {
+			else if (settings.itemTable.countLimitPerTeam[itemName] === settings.itemTable.maxEachLimit) {
 				var teamID = getTeamIDFromPlayerID(playerID);
 				if (teamID !== null) {
 					var playerIDs = getConnectedPlayerIDsOnTeam(teamID);
@@ -810,8 +684,8 @@ function getUniqueItemName(playerID, heroInventory) {
 				}
 			}
 
-			if ( typeof li.itemTable.componentExclude.items[itemName] !== "undefined" ) {
-				var entries = li.itemTable.componentExclude.items[itemName];
+			if ( settings.itemTable.componentExclude.items[itemName] ) {
+				var entries = settings.itemTable.componentExclude.items[itemName];
 				for (var i = 0; i < entries.length; ++i) {
 					itemNamesGiven.push(entries[i]);
 				}
@@ -819,27 +693,27 @@ function getUniqueItemName(playerID, heroInventory) {
 		}
 	}
 
-	return itemName;
+	return itemEntry;
 }
 
-function giveItemToPlayer(itemName, playerID, addToQueue) {
+function giveItemToPlayer(itemEntry, playerID, addToQueue) {
 
 	addToQueue = typeof addToQueue !== 'undefined' ? addToQueue : false;
 
 	if (addToQueue) {
-		addItemToQueue(itemName, playerID);
+		addItemToQueue(itemEntry, playerID);
 		return;
 	}
 
 	var client = dota.findClientByPlayerID(playerID);
 	if (client === null) {
-		addItemToQueue(itemName, playerID);
+		addItemToQueue(itemEntry, playerID);
 		return;
 	}
 
 	var hero = client.netprops.m_hAssignedHero;
 	if (hero === null) {
-		addItemToQueue(itemName, playerID);
+		addItemToQueue(itemEntry, playerID);
 		return;
 	}
 	if (!hero.isHero()) return;
@@ -848,18 +722,26 @@ function giveItemToPlayer(itemName, playerID, addToQueue) {
 	var spaceInInventory = isInventoryAvailable(hero);
 
 	if (hero.netprops.m_lifeState === UNIT_LIFE_STATE_ALIVE) {
-		if (spaceInInventory || spaceInStash) {
-			if (spaceInInventory) {
+		if (spaceInInventory || spaceInStash)
+		{
+			if (spaceInInventory)
+			{
 				for (var v = HERO_INVENTORY_BEGIN; v <= HERO_INVENTORY_END; ++v)
 				{
 					var isItemInThisSpace = hero.netprops.m_hItems[v];
 					if (isItemInThisSpace === null)
 					{
-						dota.giveItemToHero(itemName, hero);
+						dota.giveItemToHero(itemEntry[0], hero);
 						var m_hItem = hero.netprops.m_hItems[v];
 						if (m_hItem === null)
 							return false;
 
+						// Enchant our loot?
+						if (enchanter.enabled) {
+							// enchantLoot(m_hItem, itemEntry, playerID)
+						}
+
+						// Alter item properties
 						changeItemProperties(m_hItem);
 
 						var index = m_hItem.index;
@@ -868,18 +750,26 @@ function giveItemToPlayer(itemName, playerID, addToQueue) {
 					}
 				}
 			}
-			else if (spaceInStash && li.doNotPutInStash.indexOf(itemName) === -1) {
+			else if (spaceInStash) // && settings.doNotPutInStash.indexOf(itemEntry[0]) === -1
+			{
 				for (var v = HERO_STASH_BEGIN; v <= HERO_STASH_END; ++v)
 				{
 					var isItemInThisSpace = hero.netprops.m_hItems[v];
 					if (isItemInThisSpace === null)
 					{
-						dota.giveItemToHero(itemName, hero);
+						dota.giveItemToHero(itemEntry[0], hero);
 						var m_hItem = hero.netprops.m_hItems[v];
 						if (m_hItem === null)
 							return false;
 
+						// Enchant our loot?
+						if (enchanter.enabled) {
+							// enchantLoot(m_hItem, itemEntry, playerID)
+						}
+
+						// Alter item properties
 						changeItemProperties(m_hItem);
+
 
 						var index = m_hItem.index;
 						playerProps[playerID].itemEntities.push(index);
@@ -887,19 +777,30 @@ function giveItemToPlayer(itemName, playerID, addToQueue) {
 					}
 				}
 			}
+			else {
+				addItemToQueue(itemEntry, playerID);
+				return false;
+			}
 		}
 		else {
-			addItemToQueue(itemName, playerID);
+			addItemToQueue(itemEntry, playerID);
 			return false;
 		}
 	}
 	else {
-		addItemToQueue(itemName, playerID);
+		addItemToQueue(itemEntry, playerID);
 		return false;
 	}
 }
 
 function changeItemProperties(entity) {
+
+	if (settings.soundEffects.enabled && !entity.enchanted) {
+		var sound = settings.soundEffects.list[util.getRandomNumber(settings.soundEffects.list.length)];
+		var client = dota.findClientByPlayerID(entity.netprops.m_hOwnerEntity.netprops.m_iPlayerID);
+		if (client !== null)
+			dota.sendAudio(client, false, sound);
+	}
 
 	entity.netprops.m_bSellable = false;
 	entity.netprops.m_bDisassemblable = false;
@@ -911,7 +812,8 @@ function changeItemProperties(entity) {
 	entity.netprops.m_iSharability = 0;
 	entity.netprops.m_bKillable = false;
 
-	return;
+
+	return true;
 }
 
 function addItemToQueue(itemName, playerID) {
@@ -920,21 +822,28 @@ function addItemToQueue(itemName, playerID) {
 	setPlayerProp(playerID, "queue", q);
 }
 
-function getRandomLoot(playerID) {
+function getRandomLoot(playerID, pullFromMaxLoot) {
 
 	var loot;
 
-	loot = li.itemTable.instance;
+	loot = settings.itemTable.instance;
 
-	if (li.itemTable.useWeights && wardrobe.enabled) {
+	if (settings.itemTable.useWeights && wardrobe.enabled) {
 		if (playerProps[playerID].lootTable !== null)
 			loot = playerProps[playerID].lootTable;
 	}
 
 	if (!loot) loot = baseItemTable;
 
+	if (pullFromMaxLoot) {
+		var item = settings.maxTriesLoot[util.getRandomNumber(settings.maxTriesLoot.length)];
+		for (i = 0; i < loot.length; i++) {
+			if (loot[i][0] == item)
+				return loot[i];
+	    }
+	}
 	if (playerProps[playerID].nextDropFavored) {
-		if (getRandomNumber(100) < li.itemDropFavorPercent) {
+		if (util.getRandomNumber(100) < settings.itemDropFavorPercent) {
 			var chanceLoot = [];
 			for (var i = 0; i < loot.length; ++i) {
 				if (loot[i][2] > 2000)
@@ -943,8 +852,7 @@ function getRandomLoot(playerID) {
 			loot = chanceLoot;
 		}
 	}
-
-	if (li.itemTable.useWeights) {
+	if (settings.itemTable.useWeights) {
 	    var lootTotalWeight = 0, lootCumulativeWeight = 0, i, weight;
 
 	    for (i = 0; i < loot.length; i++) {
@@ -959,7 +867,7 @@ function getRandomLoot(playerID) {
 	    }
 	}
 	else {
-		return loot[getRandomNumber(loot.length)];
+		return loot[util.getRandomNumber(loot.length)];
 	}
 }
 function getConnectedPlayerIDs() {
@@ -1011,18 +919,35 @@ function getTeamIDFromPlayerID(playerID) {
 	return teamID;
 }
 
-function getHeroEquipment(hero) {
+function getHeroEquipmentNames(hero) {
 	if (!hero || hero === null || typeof hero === "undefined")
 		return;
 
 	var heroItemsEquipped = [], currentSlot, className;
-	for (var k = HERO_INVENTORY_BEGIN; k < HERO_STASH_END; k++)
+	for (var k = HERO_INVENTORY_BEGIN; k <= HERO_STASH_END; k++)
 	{
 		currentSlot = hero.netprops.m_hItems[k];
 		if (currentSlot === null)
 			continue;
 
 		className = currentSlot.getClassname();
+		heroItemsEquipped.push(className);
+	}
+	return heroItemsEquipped;
+}
+
+function getHeroEquipmentEntities(hero) {
+	if (!hero || hero === null || typeof hero === "undefined")
+		return;
+
+	var heroItemsEquipped = [], currentSlot, className;
+	for (var k = HERO_INVENTORY_BEGIN; k <= HERO_INVENTORY_END; k++)
+	{
+		currentSlot = hero.netprops.m_hItems[k];
+		if (currentSlot === null)
+			continue;
+
+		className = currentSlot;
 		heroItemsEquipped.push(className);
 	}
 	return heroItemsEquipped;
@@ -1081,24 +1006,6 @@ function printToPlayer(playerID, string, args) {
 	client.printToChat(g_plugin["prefix"] + " " + format);
 }
 
-function setPlayerResource(playerID, prop, value) {
-	if(!playerManager || !playerManager.isValid()) {
-		return undefined;
-	}
-	playerManager.netprops[prop][playerID] = value;
-}
-
-function getPlayerResource(playerID, prop) {
-	return playerManager.netprops[prop][playerID];
-}
-
-function addPlayerResource(playerID, prop, value) {
-	if(!playerManager || !playerManager.isValid()) {
-		return undefined;
-	}
-	playerManager.netprops[prop][playerID] += value;
-}
-
 function setPlayerProp(playerID, prop, value) {
 	if(!playerProps[playerID]) {
 		return undefined;
@@ -1114,26 +1021,9 @@ function getPlayerProp(playerID, prop) {
 // ==========================================
 game.hook("OnMapStart", onMapStart);
 function onMapStart() {
-	li.mapLoaded = true;
+	settings.mapLoaded = true;
+
 	playerManager = game.findEntityByClassname(-1, "dota_player_manager");
-}
-
-game.hookEvent("dota_player_killed", onPlayerKilled);
-function onPlayerKilled(event) {
-	if (rubberband.enabled) {
-		var herokill = event.getBool("HeroKill");
-		if (!herokill)
-			return;
-
-		var playerID = event.getInt("PlayerID");
-		var client = dota.findClientByPlayerID(playerID);
-		if (client === null)
-			return;
-
-		var team = (client.netprops.m_iTeamNum == TEAM_RADIANT ? "TEAM_DIRE" : "TEAM_RADIANT");
-
-		++rubberband[team].kills;
-	}
 }
 
 // ==========================================
@@ -1151,29 +1041,6 @@ Object.prototype.clone = function() {
   } return newObj;
 };
 
-function containsFlag(flags, flag) {
-    return (flags & flag) === flag;
-}
-
-function convertMinutesToSeconds(input) {
-    var parts = input.split(':'),
-        minutes = +parts[0],
-        seconds = +parts[1];
-    return (minutes * 60 + seconds);
-}
-function flipInt(number) {
-	return (Math.round(Math.random()) === 0 ? -number : number);
-}
-function getRandomNumber(a){return Math.floor(Math.random()*a);}
-function convertSecondsToMinutes(a){var b=Math.floor(a/60);a%=60;return(10>b?"0"+b:b)+":"+(10>a?"0"+a:a);}
-function IsInteger(number) {
-	var regex = /^\d+$/;
-	if(regex.test(number)) {
-		return true;
-	}
-	return false;
-}
-
 // ==========================================
 // Lobby Setup
 // ==========================================
@@ -1182,18 +1049,20 @@ plugin.get('LobbyManager', function(obj){
 	lobbyManager = obj;
 	var optionTime = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Speed"];
 	if (optionTime) {
-		li.nextBase.length = 0;
-		li.leadTime.length = 0;
-		li.leadTime = [optionTime];
-		li.nextBase = [optionTime];
+		settings.nextBase.length = 0;
+		settings.leadTime.length = 0;
+		settings.leadTime = [optionTime];
+		settings.nextBase = [optionTime];
 
-		var s = convertMinutesToSeconds(optionTime);
+		var s = util.convertMinutesToSeconds(optionTime);
 
-		if (s < li.soundEffects.timeThreshold)
-			li.soundEffects.enabled = false;
+		settings.timeInSeconds = s;
 
-		if (s < li.dropNotifications.timeThreshold)
-			li.dropNotifications.enabled = false;
+		if (s < settings.soundEffects.timeThreshold)
+			settings.soundEffects.enabled = false;
+
+		if (s < settings.dropNotifications.timeThreshold)
+			settings.dropNotifications.enabled = false;
 	}
 
 	var optionWeight = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Weights"];
@@ -1202,93 +1071,90 @@ plugin.get('LobbyManager', function(obj){
 		default:
 		case "Weighted": break;
 		case "Non-weighted":
-			li.itemTable.useWeights = false;
+			settings.itemTable.useWeights = false;
 		break;
 	}
-
-	var optionSelection = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Selection"];
-	buildItemTable(optionSelection);
 
 	var optionAmount = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Amount"];
 	switch(optionAmount)
 	{
 		case "1 Wave":
-			li.waveLimit = 1;
+			settings.waveLimit = 1;
 			break;
 		case "2 Waves":
-			li.waveLimit = 2;
+			settings.waveLimit = 2;
 			break;
 		case "3 Waves":
-			li.waveLimit = 3;
+			settings.waveLimit = 3;
 			break;
 		case "4 Waves":
-			li.waveLimit = 4;
+			settings.waveLimit = 4;
 			break;
 		case "5 Waves":
-			li.waveLimit = 5;
+			settings.waveLimit = 5;
 			break;
 		case "6 Waves":
-			li.waveLimit = 6;
+			settings.waveLimit = 6;
 			break;
 		case "7 Waves":
-			li.waveLimit = 7;
+			settings.waveLimit = 7;
 			break;
 		case "8 Waves":
-			li.waveLimit = 8;
+			settings.waveLimit = 8;
 			break;
 		case "9 Waves":
-			li.waveLimit = 9;
+			settings.waveLimit = 9;
 			break;
 		case "10 Waves":
-			li.waveLimit = 10;
+			settings.waveLimit = 10;
 			break;
 		default:
 		case "15 Waves":
-			li.waveLimit = 15;
+			settings.waveLimit = 15;
 			break;
 		case "20 Waves":
-			li.waveLimit = 20;
+			settings.waveLimit = 20;
 			break;
 		case "∞ Waves":
-			li.waveLimit = -1;
+			settings.waveLimit = -1;
 			break;
 	}
+
+	var optionSelection = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Selection"];
+	buildItemTable(optionSelection);
 });
 
 function buildItemTable(option) {
 	switch(option)
 	{
 		default:
-		case "Greater than 1,000g": break;
-		case "Greater than 275g":
-			li.itemTable.priceRangeMin = 275;
+		case "> 1,000g": break;
+		case "> 275g":
+			settings.itemTable.priceRangeMin = 275;
 			break;
-		case "Greater than 1,500g":
-			li.itemTable.priceRangeMin = 1500;
+		case "> 1,500g":
+			settings.itemTable.priceRangeMin = 1500;
 			break;
-		case "Greater than 2,000g":
-			li.itemTable.priceRangeMin = 2000;
+		case "> 2,000g":
+			settings.itemTable.priceRangeMin = 2000;
 			break;
-		case "Greater than 2,500g":
-			li.itemTable.priceRangeMin = 2500;
-			break;
-		case "Greater than 3,000g":
-			li.itemTable.priceRangeMin = 3000;
+		case "> 2,500g":
+			settings.itemTable.priceRangeMin = 2500;
 			break;
 		case "Early Game":
-			li.itemTable.customMode = 6;
+			settings.itemTable.customMode = 6;
 			break;
 		case "Aegis & Rapier":
-			li.itemTable.customMode = 2;
+			settings.itemTable.customMode = 2;
 			break;
 		case "Caster & Support Only":
-			li.itemTable.customMode = 3;
+			settings.itemTable.customMode = 3;
 			break;
 		case "Weapons Only":
-			li.itemTable.customMode = 4;
+			settings.itemTable.customMode = 4;
 			break;
 		case "Armor & Defensive Only":
-			li.itemTable.customMode = 5;
+			settings.itemTable.customMode = 5;
 			break;
 	}
 
@@ -1302,12 +1168,12 @@ function buildItemTable(option) {
 		}
 	}
 	// Apply additional modifications to tmp table
-	switch(li.itemTable.customMode)
+	switch(settings.itemTable.customMode)
 	{
 		default:
 		case 1:
 			for (i = 0; i < tmp.length; ++i) {
-				if ( tmp[i][2] > li.itemTable.priceRangeMin && tmp[i][2] < li.itemTable.priceRangeMax ) {
+				if ( tmp[i][2] > settings.itemTable.priceRangeMin && tmp[i][2] < settings.itemTable.priceRangeMax ) {
 					mainItemTable.push(tmp[i]);
 				}
 			}
@@ -1316,7 +1182,7 @@ function buildItemTable(option) {
 			for (i = 0; i < tmp.length; ++i) {
 				var itemList = ["item_rapier", "item_aegis"];
 				if ( itemList.indexOf(tmp[i][0]) > -1 ) {
-					if (li.itemTable.useWeights) {
+					if (settings.itemTable.useWeights) {
 						if (tmp[i][0] == "item_rapier")
 							tmp[i][1] = 35;
 
@@ -1328,21 +1194,21 @@ function buildItemTable(option) {
 			break;
 		case 3: // Caster/Support items only
 			for (i = 0; i < tmp.length; ++i) {
-				if ( containsFlag(tmp[i][5], 1) && tmp[i][5] !== 0 ) {
+				if ( util.containsFlag(tmp[i][5], 1) && tmp[i][5] !== 0 ) {
 					mainItemTable.push(tmp[i]);
 				}
 			}
 			break;
 		case 4: // Damage items only
 			for (i = 0; i < tmp.length; ++i) {
-				if ( containsFlag(tmp[i][5], 2) && tmp[i][5] !== 0 ) {
+				if ( util.containsFlag(tmp[i][5], 2) && tmp[i][5] !== 0 ) {
 					mainItemTable.push(tmp[i]);
 				}
 			}
 			break;
 		case 5: // Armor/Defensive items only
 			for (i = 0; i < tmp.length; ++i) {
-				if ( containsFlag(tmp[i][5], 4) && tmp[i][5] !== 0 ) {
+				if ( util.containsFlag(tmp[i][5], 4) && tmp[i][5] !== 0 ) {
 					mainItemTable.push(tmp[i]);
 				}
 			}
@@ -1355,53 +1221,24 @@ function buildItemTable(option) {
 			}
 			break;
 	}
-	li.itemTable.instance = mainItemTable;
+	settings.itemTable.instance = mainItemTable;
+
+	// Setup our enchantment percentage
+	if (enchanter.enabled) {
+		enchanter.percentage = (40 + (settings.timeInSeconds / 13) );
+	}
 }
-
-// ==========================================
-// For other plugin devs
-// ==========================================
-
-// plugin.expose({
-// 	// Disables items for the passed playerID
-//     disableDropsForPlayerID: function(playerID) {
-//     	if ( !playerProps[playerID] )
-//     		return false;
-
-//     	if ( player.indexOf( li.playersExemptFromDrops) > -1 )
-//     		return false;
-
-//     	li.playersBarredFromDrops.push( playerID );
-//     	return true; // Success!
-//     },
-// 	// Enables items for the disabled playerID
-//     enableDropsForPlayerID: function(playerID) {
-//     	var idx = li.playersBarredFromDrops.indexOf( playerID );
-//     	if ( idx > -1 ) {
-//     		li.playersBarredFromDrops.splice( idx, 1);
-//     		return true;
-//     	}
-//     	return false;
-//     }
-// });
-
-// plugin.get("WeaponMayhem", function(obj) {
-// 	var clients = getConnectedPlayingClients();
-// 	for (var i = 0; i < clients.length; ++i) {
-// 		server.print( obj.disableDropsForPlayerID( clients[i].netprops.m_iPlayerID ) );
-// 	}
-// });
 
 // ==========================================
 // Addon: Wardrobe
 // ==========================================
 function tailorHeroes() {
-	var baseTable = li.itemTable.instance;
+	var baseTable = settings.itemTable.instance;
 	var tmpTable = baseTable.clone();
 	var i, j, k;
-	for (i = 0; i < li.playerList.length; i++)
+	for (i = 0; i < settings.playerList.length; i++)
 	{
-		var playerID = li.playerList[i];
+		var playerID = settings.playerList[i];
 
 		var client = dota.findClientByPlayerID(playerID);
 		if (client === null)
@@ -1543,110 +1380,40 @@ function tailorHeroes() {
 		}
 	}
 }
-
 // ==========================================
-// Addon: Rubberband
-// ==========================================
-function pendulumSwing() {
-	// Check kill scores
-	checkTeamKills();
-	function checkTeamKills() {
-		var difference = Math.abs(rubberband.TEAM_RADIANT.kills - rubberband.TEAM_DIRE.kills);
-		if (difference < rubberband.killsItemTableThresholdMin) { // No effect
-			rubberband.TEAM_DIRE.modifier = 0;
-			rubberband.TEAM_RADIANT.modifier = 0;
-			rubberband.TEAM_RADIANT.usePoorTable = false;
-			rubberband.TEAM_DIRE.usePoorTable = false;
-		}
-		else if (difference < rubberband.killsItemTableThresholdMax && difference >= killsItemTableThresholdMin) {
-			var value = Math.floor(difference / 2);
-			if (rubberband.TEAM_RADIANT.kills > rubberband.TEAM_DIRE.kills) {
-			// Radiant is winning
-				rubberband.TEAM_RADIANT.modifier = -value;
-				rubberband.TEAM_DIRE.modifier = value;
-			}
-			else {
-			// Dire is winning
-				rubberband.TEAM_DIRE.modifier = -value;
-				rubberband.TEAM_RADIANT.modifier = value;
-			}
-			rubberband.TEAM_RADIANT.usePoorTable = false;
-			rubberband.TEAM_DIRE.usePoorTable = false;
-		}
-		else if (difference >= rubberband.killsItemTableThresholdMax) {
-			if (rubberband.TEAM_RADIANT.kills > rubberband.TEAM_DIRE.kills) {
-				// Radiant is winning greatly
-				// Give the Radiant the poor table
-				rubberband.TEAM_RADIANT.usePoorTable = false;
-				rubberband.TEAM_RADIANT.modifier = 0;
-
-				rubberband.TEAM_DIRE.usePoorTable = false;
-				rubberband.TEAM_DIRE.modifier = (difference * 1.5);
-			}
-			else {
-				// Dire is winning greatly
-				// Give the Dire the poor table
-				rubberband.TEAM_DIRE.usePoorTable = false;
-				rubberband.TEAM_DIRE.modifier = 0;
-
-				rubberband.TEAM_RADIANT.usePoorTable = false;
-				rubberband.TEAM_RADIANT.modifier = (difference * 1.5);
-			}
-		}
-		difference = null;
-	}
-}
-
-
-// ==========================================
-// Temp.
+// Client Commands
 // ==========================================
 //
-function cleanupTrash() {
-	var clients = [], m, v, vector;
-	clients = getConnectedPlayingClients();
-	// vector = {'x': 4219, 'y': -7447, 'z': 200};
-	for (i = 0; i < clients.length; ++i) {
-		var client = clients[i];
-		var playerID = client.netprops.m_iPlayerID;
-
-		var hero = client.netprops.m_hAssignedHero;
-		if (hero === null)
-			continue;
-
-		var itemEntities = playerProps[playerID].itemEntities;
-		if (!itemEntities || itemEntities.length === 0)
-			continue;
-
-		var heroItems = [];
-		for (v = HERO_INVENTORY_BEGIN; v <= HERO_STASH_END; ++v)
-		{
-			var m_hItem = hero.netprops.m_hItems[v];
-			if (m_hItem === null)
-				continue;
-
-			var itemIndex = m_hItem.index;
-			heroItems.push(itemIndex);
+console.addClientCommand("queue", queueFunctions);
+function queueFunctions(client, args) {
+	var playerID = client.netprops.m_iPlayerID;
+	if (playerProps[playerID])
+	{
+		if (playerProps[playerID].queue.length === 0) {
+			printToPlayer(playerID, "There are no items in the queue", []);
+			return;
 		}
-		if (heroItems.length === 0)
-			continue;
+		else
+			var queueLength = playerProps[playerID].queue.length;
 
-		for (m = itemEntities.length; m > 0; --m)
-		{
-			if (heroItems.indexOf(itemEntities[m]) === -1)
+		if (args.length === 0)
+			printToPlayer(playerID, "There are %s items in the queue", [playerProps[playerID].queue.length]);
+
+		if (args.length > 1)
+			return;
+
+		else {
+			switch(args[0])
 			{
-				var entity = game.getEntityByIndex(itemEntities[m]);
-				if (entity === null || !entity) {
-					continue;
-				}
-				if (entity.isValid()) {
-					dota.remove(entity);
-					// dota.findClearSpaceForUnit(entity, vector);
-					itemEntities.splice(m, 1);
-				}
+				default: break;
+				case "clear":
+					playerProps[playerID].queue.length = 0;
+					printToPlayer(playerID, "Cleared! There were %s items in the queue", [queueLength]);
+					break;
 			}
 		}
 	}
+
 }
 
 // ==========================================
@@ -1654,22 +1421,27 @@ function cleanupTrash() {
 // ==========================================
 //
 if (g_plugin.developer) {
-	li.leadTime.length = 0;
-	li.nextBase.length = 0;
-	li.leadTime = ['0:10'];
-	li.nextBase = ['0:10'];
-	var nextBase = convertMinutesToSeconds(li.nextBase[0]);
+	settings.leadTime.length = 0;
+	settings.nextBase.length = 0;
+	settings.leadTime = ['0:00'];
+	settings.nextBase = ['0:00'];
+	var nextBase = util.convertMinutesToSeconds(settings.nextBase[0]);
 
 	if (nextBase <= 120)
-		li.dropNotifications.enabled = false;
+		settings.dropNotifications.enabled = false;
 
-	li.shakeTime = 1;
+	// To compensate for 0:00
+	settings.shakeTime = 1;
+
+	// Set queue handler to abnormal
+	settings.queue.checkXSeconds = 0.1;
 
 	// setupItemTable("Caster/Support items only");
-	// li.itemTable.customMode = 5;
+	// settings.itemTable.customMode = 5;
 	buildItemTable();
 
-	li.waveLimit = 1;
+	// Initialize infinite waves
+	settings.waveLimit = -1;
 
 	console.addClientCommand("load", liFill);
 	function liFill(client, args) {
@@ -1677,16 +1449,24 @@ if (g_plugin.developer) {
 		hero = client.netprops.m_hAssignedHero;
 		playerID = client.netprops.m_iPlayerID;
 
-		for (var i = HERO_INVENTORY_BEGIN; i < HERO_INVENTORY_END; ++i) {
-			if (hero !== null) {
-				heroItemsEquipped = getHeroEquipment(hero);
+		var count = 0;
+		do
+		{
+			count += 1
+			for (var i = HERO_INVENTORY_BEGIN; i <= HERO_STASH_END; ++i) {
+				if (hero !== null) {
+					heroItemsEquipped = getHeroEquipmentNames(hero);
+				}
+				else {
+					heroItemsEquipped = [];
+				}
+				itemName = getUniqueItemName(playerID, heroItemsEquipped);
+				giveItemToPlayer(itemName, playerID);
 			}
-			else {
-				heroItemsEquipped = [];
-			}
-			itemName = getUniqueItemName(playerID, heroItemsEquipped);
-			giveItemToPlayer(itemName, playerID);
+			if (count >= 20)
+				break;
 		}
+		while( isInventoryAvailable(hero) || isStashAvailable(hero) );
 	}
 	console.addClientCommand("remove", removeInv);
 	function removeInv(client, args) {
