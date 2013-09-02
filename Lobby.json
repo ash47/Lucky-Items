@@ -42,6 +42,8 @@
 			"type": "select",
 			"options": [
 				"Weighted",
+				"Weighted & Enchantable",
+				"Non-weighted & Enchantable",
 				"Non-weighted"
 			]
 		},

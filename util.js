@@ -52,3 +52,29 @@ exports.shuffle = function(o) {
 exports.capitaliseFirstLetter = function(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+
+exports.getConnectedPlayerIDs = function(teamID) {
+	var playing = [];
+	for (var i = 0; i < server.clients.length; ++i)
+	{
+		var client = server.clients[i];
+		if (client === null)
+			continue;
+
+		if (!client.isInGame())
+			continue;
+
+		var playerID = client.netprops.m_iPlayerID;
+		if (playerID === -1)
+			continue;
+
+		if (!teamID)
+			playing.push(playerID);
+		else {
+			if (client.netprops.m_iTeamNum === teamID)
+				playing.push(playerID);
+		}
+	}
+	return playing;
+}
