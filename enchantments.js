@@ -1,71 +1,130 @@
+var ENCHANT_ONHIT = 'onHit';
+var ENCHANT_CONSTANT = 'constant';
+
 exports.enchantMap = {
 	onHit: new Array(
-		// TIMESTOP
+		// FREEZE
 		{
-			name: 'freeze',
-			desc: 'Freezes the opponent in place for a short duration.',
+			name: 'timestop',
+			desc: 'Freezes the opponent in time for a short duration.',
 			spell: 'faceless_void_chronosphere',
 			level: 3,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
+
+					var EFFECT_DURATION = 1;
+					var EFFECT_TIMEOUT = 0;
+					var EFFECT_PROC = 10;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_DURATION = 1.0;
+							EFFECT_PROC = 10;
+							break;
+						case 2:
+							EFFECT_DURATION = 1.2;
+							EFFECT_PROC = 15;
+							break;
+						case 3:
+							EFFECT_DURATION = 1.4;
+							EFFECT_PROC = 20;
+							break;
+						case 4:
+							EFFECT_DURATION = 1.6;
+							EFFECT_PROC = 25;
+							break;
+
+					}
+
+					ent[ENCHANT_ONHIT][name].sound = 'weapons/hero/faceless_void/faceless_void_timelockimpact.wav';
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC,
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
-							ref: "faceless_void_chronosphere",
-							clsname: "modifier_faceless_void_chronosphere_freeze",
+							ref: 'faceless_void_chronosphere',
+							clsname: 'modifier_faceless_void_chronosphere_freeze',
 							options: {
-								duration: 5
+								duration: EFFECT_DURATION
 							},
-							timeout: 15,
-							chainDelay: 2.8
+							timeout: EFFECT_TIMEOUT,
+							proc: EFFECT_PROC,
+							chainDelay: 1.2
 						}
 					}
 				}
 			}
 		},
-		//FORCEPUSH
+		// FORCE PUSH
 		{
-			name: 'push',
+			name: 'forcepush',
 			desc: 'Pushes an opponent with great force.',
 			spell: 'item_force_staff',
 			level: 0,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
-					var push = 600;
-					var time = 2;
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
+
+					var EFFECT_DURATION = 3;
+					var EFFECT_TIMEOUT = 0;
+					var EFFECT_PROC = 10;
+					var PUSH_LENGTH = 600;
+
 					switch(level)
 					{
+						default:
 						case 1:
-							push += 200;
-							time += 3;
+							PUSH_LENGTH = 600;
+							EFFECT_PROC = 10;
 							break;
 						case 2:
-							push += 400;
-							time += 4;
+							PUSH_LENGTH = 800;
+							EFFECT_PROC = 15;
 							break;
 						case 3:
-							push += 800;
-							time += 5;
+							PUSH_LENGTH= 1000;
+							EFFECT_PROC = 20;
 							break;
 						case 4:
-							push += 1000;
-							time += 6;
+							PUSH_LENGTH = 1200;
+							EFFECT_PROC = 25;
 							break;
+
 					}
 
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT][name].sound = 'items/force_staff.wav';
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC,
+						push_length: PUSH_LENGTH
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
-							ref: "item_force_staff",
-							clsname: "modifier_item_forcestaff_active",
+							ref: 'item_force_staff',
+							clsname: 'modifier_item_forcestaff_active',
 							options: {
-								push_length: push
+								push_length: PUSH_LENGTH
 							},
-							timeout: time,
+							timeout: EFFECT_TIMEOUT,
+							proc: EFFECT_PROC,
 							chainDelay: 0
 						}
 					}
@@ -74,23 +133,56 @@ exports.enchantMap = {
 		},
 		{
 			name: 'blind',
-			desc: 'Strike your opponents eye, he is now blind.',
+			desc: 'Makes the opponent miss autoattacks.',
 			spell: 'tinker_laser',
-			level: 4,
+			level: 2,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
+
+					var EFFECT_DURATION = 3;
+					var EFFECT_TIMEOUT = 0;
+					var EFFECT_PROC = 15;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_DURATION = 3;
+							break;
+						case 2:
+							EFFECT_DURATION = 4;
+							break;
+						case 3:
+							EFFECT_DURATION = 5;
+							break;
+						case 4:
+							EFFECT_DURATION = 6;
+							break;
+
+					}
+
+					ent[ENCHANT_ONHIT][name].sound = 'weapons/hero/tinker/laser_impact.wav';
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
 							ref: 'tinker_laser',
 							clsname: 'modifier_tinker_laser_blind',
 							options: {
-								duration: 10,
-								silence_damage_percent: 30
+								duration: EFFECT_DURATION
 							},
-							timeout: 25,
+							timeout: EFFECT_TIMEOUT,
+							proc: EFFECT_PROC,
 							chainDelay: 0
 						}
 					}
@@ -98,50 +190,116 @@ exports.enchantMap = {
 			}
 		},
 		{
-			name: 'terror',
-			desc: 'Lower your striked foes armor.',
+			name: 'rust',
+			desc: 'Lower the opponents armor.',
 			spell: 'vengefulspirit_wave_of_terror',
 			level: 4,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
+
+					var EFFECT_DURATION = 20;
+					var EFFECT_TIMEOUT = 15;
+					var EFFECT_PROC = 0;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_DURATION = 20;
+							break;
+						case 2:
+							EFFECT_DURATION = 22;
+							break;
+						case 3:
+							EFFECT_DURATION = 24;
+							break;
+						case 4:
+							EFFECT_DURATION = 26;
+							break;
+
+					}
+
+					ent[ENCHANT_ONHIT][name].sound = 'weapons/hero/vengeful_spirit/wave_of_terror.wav';
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
 							ref: 'vengefulspirit_wave_of_terror',
 							clsname: 'modifier_vengefulspirit_wave_of_terror',
 							options: {
-								duration: 10,
-								silence_damage_percent: 30
+								duration: EFFECT_DURATION
 							},
-							timeout: 25,
+							timeout: EFFECT_TIMEOUT,
+							proc: EFFECT_PROC,
 							chainDelay: 0
 						}
 					}
 				}
 			}
 		},
-		// Orchid
+		// Silence
 		{
 			name: 'silence',
-			desc: 'Silences the opponent you strike.',
+			desc: 'Silences the opponent.',
 			spell: 'item_orchid',
 			level: 0,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
+
+					var EFFECT_DURATION = 5;
+					var EFFECT_TIMEOUT = 18;
+					var EFFECT_PROC = 0;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_DURATION = 5.25;
+							break;
+						case 2:
+							EFFECT_DURATION = 5.50;
+							break;
+						case 3:
+							EFFECT_DURATION = 5.75;
+							break;
+						case 4:
+							EFFECT_DURATION = 6;
+							break;
+
+					}
+
+					ent[ENCHANT_ONHIT][name].sound = 'items/orchid.wav';
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
 							ref: 'item_orchid',
 							clsname: 'modifier_orchid_malevolence_debuff',
 							options: {
-								duration: 10,
-								silence_damage_percent: 30
+								duration: EFFECT_DURATION
 							},
-							timeout: 25,
+							timeout: EFFECT_TIMEOUT,
+							proc: EFFECT_PROC,
 							chainDelay: 0
 						}
 					}
@@ -151,75 +309,115 @@ exports.enchantMap = {
 		// Sheepstick
 		{
 			name: 'sheepstick',
-			desc: 'Morphs the attacked into a piggy.',
+			desc: 'Turns the opponent into a helpless pig.',
 			spell: 'item_sheepstick',
 			level: 0,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
 
-					var dura = 0;
-					var move = 0;
-					var time = 2;
+					var EFFECT_DURATION = 3.5;
+					var EFFECT_TIMEOUT = 35;
+					var EFFECT_PROC = 0;
+
 					switch(level)
 					{
+						default:
 						case 1:
-							dura = 4;
-							move = 400;
-							time += 3;
+							EFFECT_DURATION = 3.5;
 							break;
 						case 2:
-							dura = 6;
-							move = 300;
-							time += 4;
+							EFFECT_DURATION = 3.75;
 							break;
 						case 3:
-							dura = 8;
-							move = 200;
-							time += 5;
+							EFFECT_DURATION = 4.0;
 							break;
 						case 4:
-							dura = 10;
-							move = 100;
-							time += 6;
+							EFFECT_DURATION = 4.25;
 							break;
+
 					}
 
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT][name].sound = null;
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
-							ref: "item_sheepstick",
-							clsname: "modifier_sheepstick_debuff",
+							ref: 'item_sheepstick',
+							clsname: 'modifier_sheepstick_debuff',
 							options: {
-								duration: dura,
-								sheep_movement_speed: move
+								duration: EFFECT_DURATION
 							},
-							timeout: time,
+							timeout: EFFECT_TIMEOUT,
+							proc:  EFFECT_PROC,
 							chainDelay: 0
 						}
 					}
 				}
 			}
 		},
+		// FREEZE
 		{
-			name: 'frostbite',
-			desc: 'Throws down the disco ball.',
+			name: 'freeze',
+			desc: 'Freezes the opponent in place for a short duration.',
 			spell: 'crystal_maiden_frostbite',
-			level: 4,
+			level: 0,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
+
+					var EFFECT_DURATION = 1.5;
+					var EFFECT_TIMEOUT = 10;
+					var EFFECT_PROC = 0;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_DURATION = 1.5;
+							break;
+						case 2:
+							EFFECT_DURATION = 2;
+							break;
+						case 3:
+							EFFECT_DURATION = 2.5;
+							break;
+						case 4:
+							EFFECT_DURATION = 3;
+							break;
+
+					}
+
+					ent[ENCHANT_ONHIT][name].sound = 'weapons/hero/crystal_maiden/frostbite.wav';
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
-							ref: "crystal_maiden_frostbite",
-							clsname: "modifier_crystal_maiden_frostbite",
+							ref: 'crystal_maiden_frostbite',
+							clsname: 'modifier_crystal_maiden_frostbite',
 							options: {
-								duration: 4
+								duration: EFFECT_DURATION
 							},
-							timeout: 10,
+							timeout: EFFECT_TIMEOUT,
+							proc: EFFECT_PROC,
 							chainDelay: 0
 						}
 					}
@@ -228,22 +426,60 @@ exports.enchantMap = {
 		},
 		{
 			name: 'slow',
-			desc: 'Slower than mollassus.',
+			desc: 'Slows the opponent for a short duration.',
 			spell: 'item_diffusal_blade',
 			level: 0,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
+
+					var EFFECT_DURATION = 4;
+					var EFFECT_TIMEOUT = 8;
+					var EFFECT_PROC = 0;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_DURATION = 4;
+							EFFECT_TIMEOUT = 8;
+							break;
+						case 2:
+							EFFECT_DURATION = 5;
+							EFFECT_TIMEOUT = 9;
+							break;
+						case 3:
+							EFFECT_DURATION = 6;
+							EFFECT_TIMEOUT = 10;
+							break;
+						case 4:
+							EFFECT_DURATION = 7;
+							EFFECT_TIMEOUT = 11;
+							break;
+
+					}
+
+					ent[ENCHANT_ONHIT][name].sound = 'items/item_diffusalblade.wav';
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
-							ref: "item_diffusal_blade",
-							clsname: "modifier_item_diffusal_blade_slow",
+							ref: 'item_diffusal_blade',
+							clsname: 'modifier_item_diffusal_blade_slow',
 							options: {
-								duration: 5
+								duration: EFFECT_DURATION
 							},
-							timeout: 10,
+							timeout: EFFECT_TIMEOUT,
+							proc: EFFECT_PROC,
 							chainDelay: 0
 						}
 					}
@@ -251,23 +487,56 @@ exports.enchantMap = {
 			}
 		},
 		{
-			name: 'enfeeble',
-			desc: 'Strike a blow to your foes and make them weak.',
+			name: 'weaken',
+			desc: 'Weakens the opponents damage.',
 			spell: 'bane_enfeeble',
-			level: 1,
+			level: 4,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_ONHIT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_ONHIT] = {};
+				}
+				if(!ent[ENCHANT_ONHIT][name])
+				{
+					ent[ENCHANT_ONHIT][name] = {};
+
+					var EFFECT_DURATION = 10;
+					var EFFECT_TIMEOUT = 15;
+					var EFFECT_PROC = 0;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_DURATION = 10;
+							break;
+						case 2:
+							EFFECT_DURATION = 10;
+							break;
+						case 3:
+							EFFECT_DURATION = 15;
+							break;
+						case 4:
+							EFFECT_DURATION = 20;
+							break;
+					}
+
+					ent[ENCHANT_ONHIT][name].sound = 'weapons/hero/bane/enfeeble.wav';
+					ent[ENCHANT_ONHIT][name].props = {
+						level: level,
+						duration: EFFECT_DURATION,
+						timeout: EFFECT_TIMEOUT,
+						proc: EFFECT_PROC
+					}
+					ent[ENCHANT_ONHIT][name].modifiers = {
 						1: {
 							ref: 'bane_enfeeble',
 							clsname: 'modifier_bane_enfeeble',
 							options: {
-								duration: 10
+								duration: EFFECT_DURATION
 							},
-							timeout: 25,
+							timeout: EFFECT_TIMEOUT,
+							proc: EFFECT_PROC,
 							chainDelay: 0
 						}
 					}
@@ -281,43 +550,92 @@ exports.enchantMap = {
 			name: 'haste',
 			desc: 'Wearer has a constant haste buff.',
 			spell: 'lycan_shapeshift',
-			level: 3,
+			level: 1,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					var EFFECT_SPEED = 250;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_SPEED = 250;
+							break;
+						case 2:
+							EFFECT_SPEED = 300;
+							break;
+						case 3:
+							EFFECT_SPEED = 350;
+							break;
+						case 4:
+							EFFECT_SPEED = 400;
+							break;
+					}
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level,
+						speed: EFFECT_SPEED
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "lycan_shapeshift",
 							clsname: "modifier_lycan_shapeshift_speed",
 							options: {
 								duration: 5,
-								speed: 500
+								speed: EFFECT_SPEED
 							}
 						}
-						// 2: {
-						// 	ref: "lycan_shapeshift",
-						// 	clsname: "modifier_lycan_shapeshift",
-						// 	options: {
-						// 		duration: 5,
-						// 	}
-						// },
 					}
 				}
 			}
 		},
 		{
 			name: 'bloodthirst',
-			desc: 'Wearer has a constant haste buff.',
+			desc: 'Wearer can see hurt enemies.',
 			spell: 'bloodseeker_thirst',
 			level: 4,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					var EFFECT_SPEED = 250;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_SPEED = 250;
+							break;
+						case 2:
+							EFFECT_SPEED = 300;
+							break;
+						case 3:
+							EFFECT_SPEED = 350;
+							break;
+						case 4:
+							EFFECT_SPEED = 400;
+							break;
+					}
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level,
+						speed: EFFECT_SPEED
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "bloodseeker_thirst",
 							clsname: "modifier_bloodseeker_thirst",
@@ -330,6 +648,7 @@ exports.enchantMap = {
 							clsname: "modifier_bloodseeker_thirst_speed",
 							options: {
 								duration: 5,
+								speed: EFFECT_SPEED
 							}
 						},
 						3: {
@@ -345,15 +664,23 @@ exports.enchantMap = {
 		},
 		{
 			name: 'warcry',
-			desc: 'Wearer has a constant haste buff.',
+			desc: 'Wearer has increased armor and movespeed.',
 			spell: 'sven_warcry',
-			level: 4,
+			level: 3,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "crystal_maiden_freezing_field",
 							clsname: "modifier_sven_warcry",
@@ -411,15 +738,43 @@ exports.enchantMap = {
 		// },
 		{
 			name: 'surge',
-			desc: 'Wearer has a constant haste buff.',
+			desc: 'Wearer has is constantly surging.',
 			spell: 'dark_seer_surge',
 			level: 4,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					var EFFECT_SPEED = 250;
+
+					switch(level)
+					{
+						default:
+						case 1:
+							EFFECT_SPEED = 250;
+							break;
+						case 2:
+							EFFECT_SPEED = 300;
+							break;
+						case 3:
+							EFFECT_SPEED = 350;
+							break;
+						case 4:
+							EFFECT_SPEED = 400;
+							break;
+					}
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level,
+						speed: EFFECT_SPEED
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "dark_seer_surge",
 							clsname: "modifier_dark_seer_surge",
@@ -434,41 +789,27 @@ exports.enchantMap = {
 		},
 		// Invisibility
 		{
-			name: 'windwalk',
-			desc: 'Makes the wearer invisible.',
-			spell: 'clinkz_wind_walk',
-			level: 4,
+			name: 'invisibility',
+			desc: 'Makes the wearer permanently invisible.',
+			spell: 'riki_permanent_invisibility',
+			level: 2,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
-						1: {
-							ref: "clinkz_wind_walk",
-							clsname: "modifier_clinkz_wind_walk",
-							options: {
-								duration: 5
-							}
-						}
-					}
+					ent[ENCHANT_CONSTANT] = {};
 				}
-			}
-		},
-		{
-			name: 'restoration',
-			desc: 'Makes the wearer heal themselves.',
-			spell: 'witch_doctor_voodoo_restoration',
-			level: 4,
-			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT][name])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
-							ref: "witch_doctor_voodoo_restoration",
-							clsname: "modifier_voodoo_restoration_heal",
+							ref: "riki_permanent_invisibility",
+							clsname: "modifier_riki_permanent_invisibility",
 							options: {
 								duration: 5
 							}
@@ -479,15 +820,23 @@ exports.enchantMap = {
 		},
 		{
 			name: 'spriteheal',
-			desc: 'Makes the wearer heal themselves.',
+			desc: 'Forest creatures heal the wearer.',
 			spell: 'enchantress_natures_attendants',
-			level: 4,
+			level: 3,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "enchantress_natures_attendants",
 							clsname: "modifier_enchantress_natures_attendants",
@@ -501,15 +850,23 @@ exports.enchantMap = {
 		},
 		{
 			name: 'firefly',
-			desc: 'Makes the wearer fly in the sky as high.',
+			desc: 'Makes the wearer fly in the sky.',
 			spell: 'batrider_firefly',
 			level: 0,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "batrider_firefly",
 							clsname: "modifier_batrider_firefly",
@@ -525,13 +882,21 @@ exports.enchantMap = {
 			name: 'bloodlust',
 			desc: 'Makes the wearer frenzied.',
 			spell: 'ogre_magi_bloodlust',
-			level: 4,
+			level: 2,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "ogre_magi_bloodlust",
 							clsname: "modifier_ogre_magi_bloodlust",
@@ -545,15 +910,23 @@ exports.enchantMap = {
 		},
 		{
 			name: 'brawler',
-			desc: 'How many times are you gonna miss?',
+			desc: 'Passive crit chance and dodge bonus',
 			spell: 'brewmaster_drunken_brawler',
-			level: 4,
+			level: 2,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "brewmaster_drunken_brawler",
 							clsname: "modifier_brewmaster_drunken_brawler",
@@ -567,15 +940,23 @@ exports.enchantMap = {
 		},
 		{
 			name: 'empower',
-			desc: 'Empowers the wearer',
+			desc: 'Passive cleave and damage increase',
 			spell: 'magnataur_empower',
-			level: 4,
+			level: 2,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "magnataur_empower",
 							clsname: "modifier_magnataur_empower",
@@ -593,11 +974,19 @@ exports.enchantMap = {
 			spell: 'item_armlet',
 			level: 0,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "item_armlet",
 							clsname: "modifier_item_armlet_unholy_strength",
@@ -611,15 +1000,23 @@ exports.enchantMap = {
 		},
 		{
 			name: 'berserk',
-			desc: 'Gives the wearer immense speed, at the cost of vulnerability.',
+			desc: 'Gives the wearer immense attack speed, at the cost of vulnerability.',
 			spell: 'item_mask_of_madness',
 			level: 0,
 			setup: function(ent, name, level) {
-				// Grab the stat modifier
-				if(!ent[name])
+				if(!ent[ENCHANT_CONSTANT])
 				{
-					ent[name] = {};
-					ent[name].modifiers = {
+					ent[ENCHANT_CONSTANT] = {};
+				}
+				if(!ent[ENCHANT_CONSTANT][name])
+				{
+					ent[ENCHANT_CONSTANT][name] = {};
+
+					ent[ENCHANT_CONSTANT][name].props = {
+						level: level
+					}
+					
+					ent[ENCHANT_CONSTANT][name].modifiers = {
 						1: {
 							ref: "item_mask_of_madness",
 							clsname: "modifier_item_mask_of_madness_berserk",
@@ -712,36 +1109,36 @@ exports.enchantMap = {
 		// 	}
 		// }
 	),
-	castHurt: new Array(
-		{
-			name: '',
-			desc: '',
-			setup: function(ent, name) {
-				// Grab the stat modifier
-				if(!ent[name])
-				{
-					// Create the ability
-					ent[name] = dota.createAbility(ent, "");
+	// castHurt: new Array(
+	// 	{
+	// 		name: '',
+	// 		desc: '',
+	// 		setup: function(ent, name) {
+	// 			// Grab the stat modifier
+	// 			if(!ent[name])
+	// 			{
+	// 				// Create the ability
+	// 				ent[name] = dota.createAbility(ent, "");
 
-					// Level up the ability
-					ent[name].netprops.m_iLevel = 3;
-				}
-			}
-		},
-		{
-			name: '',
-			desc: '',
-			setup: function(ent, name) {
-				// Grab the stat modifier
-				if(!ent[name])
-				{
-					// Create the ability
-					ent[name] = dota.createAbility(ent, "");
+	// 				// Level up the ability
+	// 				ent[name].netprops.m_iLevel = 3;
+	// 			}
+	// 		}
+	// 	},
+	// 	{
+	// 		name: '',
+	// 		desc: '',
+	// 		setup: function(ent, name) {
+	// 			// Grab the stat modifier
+	// 			if(!ent[name])
+	// 			{
+	// 				// Create the ability
+	// 				ent[name] = dota.createAbility(ent, "");
 
-					// Level up the ability
-					ent[name].netprops.m_iLevel = 3;
-				}
-			}
-		}
-	)
+	// 				// Level up the ability
+	// 				ent[name].netprops.m_iLevel = 3;
+	// 			}
+	// 		}
+	// 	}
+	// )
 }

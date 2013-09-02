@@ -6,7 +6,7 @@ var g_plugin = {
 	prefix: "[LI]",
 	author: "koone",
 	description: "Gives players weighted random items.",
-	version: "1.4.0",
+	version: "1.4.1",
 	credits: {
 		ocnyd6: "making the Fighting Chance plugin",
         fr0sZ: "asking thought-provoking scenario questions",
@@ -87,7 +87,7 @@ var settings = {
 	// Plugin sound effects that occur when an item is randomed to a player or other trigger events.
 	sounds: {
 		enabled: true,			// Enabled / disabled
-		timeThreshold: 60,		// Below this time (in seconds) threshold, disable them
+		timeThreshold: 45,		// Below this time (in seconds) threshold, disable them
 		list: [					// List of sound effects to use
 			"ui/npe_objective_given.wav"
 		],
@@ -144,7 +144,7 @@ var settings = {
 	addons: {
 		enchanter: {
 			enabled: false,
-			percentage: 0,
+			percentage: 30,
 			storeVoid: [],
 			onHitEnchantEntity: null,
 			constantEnchantEntity: null
@@ -258,8 +258,8 @@ var baseItemTable = [
   // [0            1,           2,     3,         4,             5,            6]
   // ["Classname", weight(0-∞), price, gamePhase, attributeMask, itemBonus, hasActive(bool)], // Weapon Name (price)
   //
-  ["item_aegis",                  20,    0, 0, -1, -1, 0], // Aegis of the Immortal (0g)
-  ["item_cheese",                 20,    0, 0, -1, -1, 0], // Cheese (0g)
+  ["item_aegis",                   5,    0, 0, -1, -1, 0], // Aegis of the Immortal (0g)
+  ["item_cheese",                  5,    0, 0, -1, -1, 0], // Cheese (0g)
   //
   ["item_orb_of_venom",          300,  275, 1, 0, 0, 0], // Orb of Venom (275g)
   ["item_null_talisman",         291,  470, 1, 4, 0, 0], // Null Talisman (470g)
@@ -323,23 +323,23 @@ var baseItemTable = [
   ["item_dagon",                 100, 2730, 2, 5, 1, 1], // Dagon 1 (2,730g)
   ["item_basher",                 96, 2950, 2, 1, 2, 0], // Skull Basher (2,950g)
   ["item_invis_sword",            95, 3000, 2, 7, 2, 1], // Shadow Blade (3,000g)
-  ["item_rod_of_atos",            62, 3100, 3, 4, 1, 1], // Rod of Atos (3,100g)
-  ["item_reaver",                 61, 3200, 3, 1, 4, 0], // Reaver (3,200g)
-  ["item_soul_booster",           59, 3300, 3, 7, 1, 0], // Soul Booster (3,300g)
-  ["item_eagle",                  59, 3300, 3, 2, 2, 0], // Eaglesong (3,300g)
-  ["item_diffusal_blade",         59, 3300, 3, 3, 2, 1], // Diffusal Blade (3,300g)
-  ["item_pipe",                   55, 3628, 3, 5, 1, 1], // Pipe of Insight (3,628g)
-  ["item_relic",                  53, 3800, 3, 7, 2, 0], // Sacred Relic (3,800g)
-  ["item_heavens_halberd",        52, 3850, 3, 1, 2, 1], // Heaven's Halberd (3,850g)
-  ["item_black_king_bar",         51, 3900, 3, 7, 4, 1], // Black King Bar (3,900g)
-  ["item_necronomicon_2",         51, 3950, 3, 0, 1, 1], // Necronomicon 2 (3,950g)
-  ["item_dagon_2",                45, 3980, 3, 0, 1, 1], // Dagon 2 (3,980g)
-  ["item_desolator",              44, 4100, 3, 3, 2, 0], // Desolator (4,100g)
-  ["item_sange_and_yasha",        44, 4100, 3, 3, 2, 0], // Sange & Yasha (4,100g)
-  ["item_orchid",                 43, 4125, 3, 4, 1, 1], // Orchid Malevolence (4,125g)
-  ["item_diffusal_blade_2",       43, 4150, 3, 0, 2, 1], // Diffusal Blade 2 (4,150g)
-  ["item_ultimate_scepter",       42, 4200, 3, 7, 7, 0], // Aghanim's Scepter (4,200g)
-  ["item_bfury",                  40, 4350, 3, 3, 2, 0], // Battle Fury (4,350g)
+  ["item_rod_of_atos",            42, 3100, 3, 4, 1, 1], // Rod of Atos (3,100g)
+  ["item_reaver",                 41, 3200, 3, 1, 4, 0], // Reaver (3,200g)
+  ["item_soul_booster",           39, 3300, 3, 7, 1, 0], // Soul Booster (3,300g)
+  ["item_eagle",                  39, 3300, 3, 2, 2, 0], // Eaglesong (3,300g)
+  ["item_diffusal_blade",         39, 3300, 3, 3, 2, 1], // Diffusal Blade (3,300g)
+  ["item_pipe",                   35, 3628, 3, 5, 1, 1], // Pipe of Insight (3,628g)
+  ["item_relic",                  33, 3800, 3, 7, 2, 0], // Sacred Relic (3,800g)
+  ["item_heavens_halberd",        32, 3850, 3, 1, 2, 1], // Heaven's Halberd (3,850g)
+  ["item_black_king_bar",         31, 3900, 3, 7, 4, 1], // Black King Bar (3,900g)
+  ["item_necronomicon_2",         31, 3950, 3, 0, 1, 1], // Necronomicon 2 (3,950g)
+  ["item_dagon_2",                25, 3980, 3, 0, 1, 1], // Dagon 2 (3,980g)
+  ["item_desolator",              24, 4100, 3, 3, 2, 0], // Desolator (4,100g)
+  ["item_sange_and_yasha",        24, 4100, 3, 3, 2, 0], // Sange & Yasha (4,100g)
+  ["item_orchid",                 23, 4125, 3, 4, 1, 1], // Orchid Malevolence (4,125g)
+  ["item_diffusal_blade_2",       23, 4150, 3, 0, 2, 1], // Diffusal Blade 2 (4,150g)
+  ["item_ultimate_scepter",       22, 4200, 3, 7, 7, 0], // Aghanim's Scepter (4,200g)
+  ["item_bfury",                  20, 4350, 3, 3, 2, 0], // Battle Fury (4,350g)
   ["item_shivas_guard",           38, 4700, 3, 4, 4, 1], // Shiva's Guard (4,700g)
   ["item_ethereal_blade",         33, 4900, 3, 6, 6, 1], // Ethereal Blade (4,900g)
   ["item_bloodstone",             31, 5050, 3, 4, 5, 1], // Bloodstone (5,050g)
@@ -347,19 +347,19 @@ var baseItemTable = [
   ["item_radiance",               30, 5150, 3, 7, 2, 0], // Radiance (5,150g)
   ["item_sphere",                 29, 5175, 3, 7, 5, 0], // Linken's Sphere (5,175g)
   ["item_necronomicon_3",         29, 5200, 3, 0, 1, 1], // Necronomicon 3 (5,200g)
-  ["item_dagon_3",                29, 5230, 3, 0, 1, 1], // Dagon 3 (5,230g)
-  ["item_refresher",              29, 5300, 3, 5, 1, 1], // Refresher Orb (5,300g)
-  ["item_assault",                27, 5350, 3, 3, 4, 0], // Assault Cuirass (5,350g)
-  ["item_mjollnir",               26, 5400, 3, 3, 2, 1], // Mjollnir (5,400g)
-  ["item_monkey_king_bar",        26, 5400, 3, 3, 2, 0], // Monkey King Bar (5,400g)
-  ["item_heart",                  25, 5500, 3, 7, 4, 0], // Heart of Terrasque (5,500g)
-  ["item_greater_crit",           24, 5550, 3, 3, 2, 0], // Daedalus (5,550g)
-  ["item_skadi",                  23, 5675, 3, 7, 3, 0], // Eye of Skadi (5,675g)
-  ["item_sheepstick",             23, 5675, 3, 4, 1, 1], // Scythe of Vyse (5,675g)
-  ["item_butterfly",              18, 6000, 3, 2, 2, 0], // Butterfly (6,000g)
-  ["item_satanic",                16, 6150, 3, 3, 2, 1], // Satanic (6,150g)
-  ["item_rapier",                 16, 6200, 3, 0, 2, 0], // Divine Rapier (6,200g)
-  ["item_dagon_4",                12, 6480, 3, 0, 1, 1], // Dagon 4 (6,480g)
+  ["item_dagon_3",                26, 5230, 3, 0, 1, 1], // Dagon 3 (5,230g)
+  ["item_refresher",              25, 5300, 3, 5, 1, 1], // Refresher Orb (5,300g)
+  ["item_assault",                23, 5350, 3, 3, 4, 0], // Assault Cuirass (5,350g)
+  ["item_mjollnir",               22, 5400, 3, 3, 2, 1], // Mjollnir (5,400g)
+  ["item_monkey_king_bar",        22, 5400, 3, 3, 2, 0], // Monkey King Bar (5,400g)
+  ["item_heart",                  20, 5500, 3, 7, 4, 0], // Heart of Terrasque (5,500g)
+  ["item_greater_crit",           20, 5550, 3, 3, 2, 0], // Daedalus (5,550g)
+  ["item_skadi",                  18, 5675, 3, 7, 3, 0], // Eye of Skadi (5,675g)
+  ["item_sheepstick",             16, 5675, 3, 4, 1, 1], // Scythe of Vyse (5,675g)
+  ["item_butterfly",              14, 6000, 3, 2, 2, 0], // Butterfly (6,000g)
+  ["item_satanic",                12, 6150, 3, 3, 2, 1], // Satanic (6,150g)
+  ["item_rapier",                 12, 6200, 3, 0, 2, 0], // Divine Rapier (6,200g)
+  ["item_dagon_4",                10, 6480, 3, 0, 1, 1], // Dagon 4 (6,480g)
   ["item_abyssal_blade",           8, 6750, 3, 1, 2, 1], // Abyssal Blade (6,750g)
   ["item_dagon_5",                 5, 7730, 3, 0, 1, 1], // Dagon 5 (7,730g)
 ];
@@ -401,7 +401,7 @@ timers.setInterval(function() {
 		if (DEBUG) server.print("First drop game time: " + settings.gameTime);
 
 		// Tell the players when the next drop is
-		printToAll(settings.dropNotifications.lead + " use -li for additional commands.", [selected]);
+		printToAll(settings.dropNotifications.lead + (enchanter.enabled ? ' use -li for enchant commands.' : ''), [selected]);
 
 		// Re-build our item table if it does not exist
 		if (settings.itemTable.instance === null) {
@@ -512,26 +512,32 @@ timers.setInterval(function() {
 			    {
 			    	var item = equipment[z];
 
-			        // Look at what type of enchants exist
-			        for ( var x = 0; x < enchMapEquipNames.length; ++x )
-			        {
-			        	if ( item[enchMapEquipNames[x]] )
-			        	{
-			        		var enchName = enchMapEquipNames[x];
+			    	if (equipment[z].constant) {
+				        // Look at what type of enchants exist
+				        for ( var x = 0; x < enchMapEquipNames.length; ++x )
+				        {
+				        	if ( item.constant[enchMapEquipNames[x]] )
+				        	{
+				        		var name = enchMapEquipNames[x];
 
-			                // Find our enchantment modifiers
-							for (var value in item[enchName].modifiers)
-							{
-			                    // Skip 'clone' ??
-			                    if (!util.isNumber(value)) continue;
+				        		if (DEBUG) server.print(name);
 
-								var modifier = item[enchName].modifiers[value];
+				        		var enchName = item.constant[enchMapEquipNames[x]];
 
-				                dota.addNewModifier(hero, enchanter.constantEnchantEntity[enchName], modifier.clsname, modifier.ref, modifier.options);
-				                // playerProps[playerID].activeModifiers.push(modifier.clsname);
-							}
-			        	}
-			        }
+				                // Find our enchantment modifiers
+								for (var value in enchName.modifiers)
+								{
+				                    // Skip 'clone' ??
+				                    if (!util.isNumber(value)) continue;
+
+									var modifier = enchName.modifiers[value];
+
+					                dota.addNewModifier(hero, enchanter.constantEnchantEntity[name], modifier.clsname, modifier.ref, modifier.options);
+					                // playerProps[playerID].activeModifiers.push(modifier.clsname);
+								}
+				        	}
+				        }
+			    	}
 			    }
 			}
 		}
@@ -848,6 +854,7 @@ function changeItemProperties(entity, entry, playerID) {
 
 function enchantLoot(entity, item, playerID) {
 	// Switch item checks and see if this item can be enchanted
+	var isEnchantable = false;
 	switch(true)
 	{
 		// Weapons that do/look like damage
@@ -884,7 +891,7 @@ function enchantLoot(entity, item, playerID) {
 		case (item[0] === "item_radiance"):
 		case (item[0] === "item_oblivion_staff"):
 		case (item[0] === "item_hand_of_midas"):
-			var isEnchantable = true;
+			isEnchantable = true;
 			var possibleEnchants = enchants.enchantMap.onHit;
 			var type = "onHit";
 			break;
@@ -908,13 +915,14 @@ function enchantLoot(entity, item, playerID) {
 		case (item[0] === "item_power_treads"):
 		case (item[0] === "item_phase_boots"):
 		case (item[0] === "item_travel_boots"):
-			var isEnchantable = true;
+			isEnchantable = true;
 			var possibleEnchants = enchants.enchantMap.constant;
 			var type = "onEquip";
 			break;
-		// default:
-		// 	var isEnchantable = false;
-		// 	break;
+		// Add entries below to not enchant
+		case (item[0] === "item_aegis"):
+		case (item[0] === "item_cheese"):
+			break;
 	}
 	if (isEnchantable)
 	{
@@ -947,7 +955,6 @@ function enchantLoot(entity, item, playerID) {
 			     
 			    var random_num = rand(0, total_weight);
 			    var weight_sum = 0;
-			    //console.log(random_num)
 			     
 			    for (var i = 0; i < list.length; i++) {
 			        weight_sum += weight[i];
@@ -957,8 +964,6 @@ function enchantLoot(entity, item, playerID) {
 			            return list[i];
 			        }
 			    }
-			     
-			    // end of function
 			};
 			 
 			var list = [1, 2, 3];
@@ -994,7 +999,7 @@ function enchantLoot(entity, item, playerID) {
 
 					// if (DEBUG) server.print("Entity has enchant? " + entity[enchant.name]);
 
-					printToPlayer(playerID, "%s have enchants: %s %s", [named, name, type]);
+					printToPlayer(playerID, "%s enchanted %s [level %s] %s", [named, name, level, type]);
 				}
 				else {
 					var enchantNames = [];
@@ -1007,7 +1012,7 @@ function enchantLoot(entity, item, playerID) {
 						levels.push(level);
 						enchant.setup(entity, enchant.name, level);
 					}
-					printToPlayer(playerID, "%s have enchants: %s %s", [named, enchantNames.join(", "), type]);
+					printToPlayer(playerID, "%s enchanted %s [levels %s] %s", [named, enchantNames.join(", "), levels.join(", "), type]);
 				}
 
 				enchanter.storeVoid.push(entity.index);
@@ -1141,6 +1146,9 @@ function onEntityHurt(event) {
 	var sourcePlayerID = sourceEntity.netprops.m_iPlayerID;
 	var targetPlayerID = targetEntity.netprops.m_iPlayerID;
 
+	var sourceClient = dota.findClientByPlayerID(sourcePlayerID);
+	var targetClient = dota.findClientByPlayerID(sourcePlayerID);
+
 	playerProps[targetPlayerID].lastAttacker = sourcePlayerID;
 
 	// Let's do work.
@@ -1156,6 +1164,8 @@ function onEntityHurt(event) {
 	var hero = sourceEntity;
 	var equipment = unit.pullHeroInventory(hero, 0);
 
+	var appliedTypes = [];
+
     // Loop through active equipment
     for ( var i = 0; i < equipment.length; ++i )
     {
@@ -1163,75 +1173,142 @@ function onEntityHurt(event) {
 
     	if ( enchanter.storeVoid.indexOf(ent.index) > -1 )
     	{
-    		if (DEBUG) server.print("Found entity: " + equipment[i].getClassname());
+    		if (DEBUG) server.print('Found entity: ' + equipment[i].getClassname());
+
     		var equip = equipment[i];
-	        // Look at what type of enchants exist
-	        for ( var j = 0; j < enchMap.length; ++j )
-	        {
-				for ( var key in enchMap[j] )
-		        {
-		        	if (key == "name")
-		        	{
-			        	if ( equip[enchMap[j][key]] )
-			        	{
-			        		var enchName = enchMap[j][key];
 
-			        		if (DEBUG) server.print("Found enchant: " + enchName);
+    		if (equip.onHitEnchants)
+    		{
+    			var arr = equip.onHitEnchants;
 
-			                if ( !playerProps[sourcePlayerID].enchantTimeouts )
-			                    playerProps[sourcePlayerID].enchantTimeouts = {};
+    			for (var type in arr)
+    			{
 
-			                // Initialize enchantment timeouts
-			                if ( !playerProps[sourcePlayerID].enchantTimeouts[targetEntityID] )
-			                    playerProps[sourcePlayerID].enchantTimeouts[targetEntityID] = {};
+    				if (type == 'clone') continue;
 
-			                // Initialize enchantment timeouts
-			                if ( !playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName] )
-			                    playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName] = {};
+    				if (appliedTypes.indexOf(type) > -1) continue;
 
-			                // Find our enchantment modifiers
-							for (var value in equip[enchName].modifiers)
-							{
-			                    // Skip 'clone' ??
-			                    if (!util.isNumber(value)) continue;
+    				var applied = false;
 
-								var modifier = equip[enchName].modifiers[value];
+					if (DEBUG) server.print('Found enchant: ' + type);
 
-			                    // Let's see if we have a timeoutDelay
-			                    if (modifier.timeout > 0)
-			                    {
-			                        if ( !playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName][value] )
-			                            playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName][value] = 0;
+					var ench = arr[type];
 
-			                        if (playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName][value] === 1) {
-			                        	if (DEBUG) server.print("Still in timeout");
-			                            continue;
-			                        }
-			                        else {
-			                            playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName][value] = 1;
+					var enchName = type;
 
-			                            // This will make a new copy of each thing, such that it wont be updated by the loop:
-			                            clearEnchantments(sourcePlayerID, targetEntityID, enchName, value, modifier.timeout);
+	                if ( !playerProps[sourcePlayerID].enchantTimeouts )
+	                    playerProps[sourcePlayerID].enchantTimeouts = {};
 
-			                            if (DEBUG) server.print("Next Frame Step: Applying Modifier");
+	                // Initialize enchantment timeouts
+	                if ( !playerProps[sourcePlayerID].enchantTimeouts[targetEntityID] )
+	                    playerProps[sourcePlayerID].enchantTimeouts[targetEntityID] = {};
 
-			                             // Apply the modifier
-			                            applyModifier(target, enchanter.onHitEnchantEntity[enchName], modifier.clsname, modifier.ref, modifier.options);
-			                       		
-			                       		if (DEBUG) server.print("Finished Frame Step: Applying Modifier");
-			                        }
-			                    }
-			                    else
-			                    	applyModifier(target, enchanter.onHitEnchantEntity[enchName], modifier.clsname, modifier.ref, modifier.options);
+	                // Initialize enchantment timeouts
+	                if ( !playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName] )
+	                    playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName] = {};
 
-								if (DEBUG) server.print("Applied modifiers");
-							}
-			        	}
-			        }
-		    	}
-	        }
+	                // Find our enchantment modifiers
+					for (var value in ench.modifiers)
+					{
+	                    // Skip 'clone' ??
+	                    if (!util.isNumber(value)) continue;
+
+						var modifier = ench.modifiers[value];
+
+	                    // Let's see if we have a timeoutDelay
+	                    if (modifier.timeout > 0)
+	                    {
+	                        if ( !playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName][value] )
+	                            playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName][value] = 0;
+
+	                        if (playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName][value] === 1) {
+	                        	if (DEBUG) server.print('Still in timeout');
+	                            continue;
+	                        }
+	                        else {
+	                            playerProps[sourcePlayerID].enchantTimeouts[targetEntityID][enchName][value] = 1;
+
+	                            // This will make a new copy of each thing, such that it wont be updated by the loop:
+	                            clearEnchantments(sourcePlayerID, targetEntityID, enchName, value, modifier.timeout);
+
+	                            if (DEBUG) server.print('Next Frame Step: Applying Modifier');
+
+	                             // Apply the modifier
+	                            applyModifier(target, enchanter.onHitEnchantEntity[enchName], modifier.clsname, modifier.ref, modifier.options);
+
+	                            if (ench.sound) {
+	                            	if (sourceClient) {
+										dota.sendAudio(sourceClient, false, ench.sound);
+										timers.setTimeout(function() {
+											cutAudio(sourceClient, ench.sound);
+										}, ench.props.duration); 
+									}
+									if (targetClient) {
+										dota.sendAudio(targetClient, false, ench.sound);
+										timers.setTimeout(function() {
+											cutAudio(targetClient, ench.sound);
+										}, ench.props.duration); 
+									}
+	                            }
+
+	                            applied = true;
+	                       		
+	                       		if (DEBUG) server.print('Finished Frame Step: Applying Modifier');
+	                        }
+	                    }
+	                    else {
+		                    if (modifier.proc > 0) {
+		                    	if (util.getRandomNumberExcludeZero(100) <= modifier.proc) {
+		                    		applyModifier(target, enchanter.onHitEnchantEntity[enchName], modifier.clsname, modifier.ref, modifier.options);
+		                            if (ench.sound) {
+		                            	if (sourceClient) {
+											dota.sendAudio(sourceClient, false, ench.sound);
+											timers.setTimeout(function() {
+												cutAudio(sourceClient, ench.sound);
+											}, ench.props.duration * 1000); 
+										}
+										if (targetClient) {
+											dota.sendAudio(targetClient, false, ench.sound);
+											timers.setTimeout(function() {
+												cutAudio(targetClient, ench.sound);
+											}, ench.props.duration * 1000); 
+										}
+		                            }
+		                            applied = true;
+		                    	}
+		                    }
+	                    	else {
+	                    		applyModifier(target, enchanter.onHitEnchantEntity[enchName], modifier.clsname, modifier.ref, modifier.options);
+	                            if (ench.sound) {
+	                            	if (sourceClient) {
+										dota.sendAudio(sourceClient, false, ench.sound);
+										timers.setTimeout(function() {
+											cutAudio(sourceClient, ench.sound);
+										}, ench.props.duration * 1000);
+									}
+									if (targetClient) {
+										dota.sendAudio(targetClient, false, ench.sound);
+										timers.setTimeout(function() {
+											cutAudio(targetClient, ench.sound);
+										}, ench.props.duration * 1000);
+									}
+	                            }
+	                            applied = true;
+	                    	}
+	                    }
+
+	                    if (applied) appliedTypes.push(type);
+
+						if (DEBUG & applied) server.print('Applied modifiers');
+					}
+    			}
+    		}
     	}
     }
+}
+
+function cutAudio(client, sound) {
+	dota.sendAudio(client, true, sound);
 }
 
 function clearEnchantments2(playerID, enchantmentName) {
@@ -1251,7 +1328,7 @@ function clearEnchantments(sourcePlayerID, targetEntityID, enchantmentName, key,
 
 
 function applyModifier(target, base, clsname, ref, options) {
-		dota.addNewModifier( target, base, clsname, ref, options );
+	dota.addNewModifier( target, base, clsname, ref, options );
 }
 
 function isPlayerHero(entity) {
@@ -1475,12 +1552,11 @@ plugin.get('LobbyManager', function(obj){
 	var optionWeight = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Weights"];
 	switch(optionWeight)
 	{
-		default:
 		case "Weighted & Enchantable":
 			enchanter.enabled = true;
 			break;
-		case "Weighted":
-			break;
+		default:
+		case "Weighted": break;
 		case "Non-weighted & Enchantable":
 			enchanter.enabled = true;
 			settings.itemTable.useWeights = false;
@@ -1490,50 +1566,58 @@ plugin.get('LobbyManager', function(obj){
 		break;
 	}
 
-	var optionAmount = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Amount"];
-	switch(optionAmount)
+	var optionEnchant = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Enchants"];
+	switch(optionEnchant)
 	{
-		case "1 Wave":
-			settings.waveLimit = 1;
-			break;
-		case "2 Waves":
-			settings.waveLimit = 2;
-			break;
-		case "3 Waves":
-			settings.waveLimit = 3;
-			break;
-		case "4 Waves":
-			settings.waveLimit = 4;
-			break;
-		case "5 Waves":
-			settings.waveLimit = 5;
-			break;
-		case "6 Waves":
-			settings.waveLimit = 6;
-			break;
-		case "7 Waves":
-			settings.waveLimit = 7;
-			break;
-		case "8 Waves":
-			settings.waveLimit = 8;
-			break;
-		case "9 Waves":
-			settings.waveLimit = 9;
-			break;
-		case "10 Waves":
-			settings.waveLimit = 10;
-			break;
-		case "15 Waves":
-			settings.waveLimit = 15;
-			break;
-		case "20 Waves":
-			settings.waveLimit = 20;
-			break;
-			default:
-		case "∞ Waves":
-			settings.waveLimit = -1;
+		default:
+		case "Enchants Disabled": break;
+		case "Enchants Enabled (beta)":
+			enchanter.enabled = true;
 			break;
 	}
+	// switch(optionEnchant)
+	// {
+	// 	case "1 Wave":
+	// 		settings.waveLimit = 1;
+	// 		break;
+	// 	case "2 Waves":
+	// 		settings.waveLimit = 2;
+	// 		break;
+	// 	case "3 Waves":
+	// 		settings.waveLimit = 3;
+	// 		break;
+	// 	case "4 Waves":
+	// 		settings.waveLimit = 4;
+	// 		break;
+	// 	case "5 Waves":
+	// 		settings.waveLimit = 5;
+	// 		break;
+	// 	case "6 Waves":
+	// 		settings.waveLimit = 6;
+	// 		break;
+	// 	case "7 Waves":
+	// 		settings.waveLimit = 7;
+	// 		break;
+	// 	case "8 Waves":
+	// 		settings.waveLimit = 8;
+	// 		break;
+	// 	case "9 Waves":
+	// 		settings.waveLimit = 9;
+	// 		break;
+	// 	case "10 Waves":
+	// 		settings.waveLimit = 10;
+	// 		break;
+	// 	case "15 Waves":
+	// 		settings.waveLimit = 15;
+	// 		break;
+	// 	case "20 Waves":
+	// 		settings.waveLimit = 20;
+	// 		break;
+	// 		default:
+	// 	case "∞ Waves":
+	// 		settings.waveLimit = -1;
+	// 		break;
+	// }
 
 	var optionSelection = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Selection"];
 	buildItemTable(optionSelection);
@@ -1647,8 +1731,11 @@ function buildItemTable(option) {
 	// Setup our enchantment percentage
 	if (enchanter.enabled) {
 		var time = util.convertMinutesToSeconds( settings.nextBase[ util.getRandomNumber( settings.nextBase.length ) ] );
-		enchanter.percentage = (40 + (time / 13) );
-		if (DEBUG) enchanter.percentage = 100;
+		enchanter.percentage = (70 + (time / 13) );
+	}
+	if (DEBUG) {
+		enchanter.enabled = true;
+		enchanter.percentage = 100;
 	}
 }
 
@@ -1813,8 +1900,13 @@ function clientFunctions(client, args) {
 	printToPlayer(playerID, "commands are:", []);
 	printToPlayer(playerID, "-queue (see inside queue)", []);
 	printToPlayer(playerID, "-queue clear (destroy items)", []);
-	if (enchanter.enabled)
-		printToPlayer(playerID, "-ei '1-6' or '0' for all (see item enchants)", []);
+	if (enchanter.enabled) {
+		printToPlayer(playerID, "-ei 0 (see items with enchants)", []);
+		printToPlayer(playerID, "-ei 1-6 (see enchant properties)", []);
+		printToPlayer(playerID, "-ei types (see enchant types)", []);
+	}
+	else
+		printToPlayer(playerID, "-ei (disabled, no item enchants)", []);
 }
 
 console.addClientCommand("queue", queueFunctions);
@@ -1829,8 +1921,9 @@ function queueFunctions(client, args) {
 		else
 			var queueLength = playerProps[playerID].queue.length;
 
-		if (args.length === 0)
-			printToPlayer(playerID, "There are %s items in the queue", [playerProps[playerID].queue.length]);
+		if (args.length === 0) {
+			printToPlayer(playerID, "There are %s items in the queue", [queueLength]);
+		}
 
 		if (args.length > 1)
 			return;
@@ -1860,12 +1953,27 @@ function enchantFunctions(client, args) {
 		return;
 		
 	if (args.length !== 1) {
-		printToPlayer(playerID, 'Use "-ei #".');
+		printToPlayer(playerID, 'Use -ei # or types.');
 		return;
 	}
+
+	if (args[0] == 'types') {
+		for(var cat in enchants.enchantMap) {
+			if (cat == 'clone') continue;
+			var arr = enchants.enchantMap[cat];
+			printToPlayer(playerID, '%s enchantments:', [util.capitaliseFirstLetter(cat)]);
+			for (var i = 0; i < arr.length; ++i) {
+				var name = arr[i].name;
+				var desc = arr[i].desc;
+				printToPlayer(playerID, '%s: %s', [util.capitaliseFirstLetter(name), desc]);
+			}
+		}
+		return;
+	}
+
 	var invSlot = Number(args[0]);
 	if (isNaN(invSlot)) {
-		printToPlayer(playerID, '# should be a number.');
+		printToPlayer(playerID, '# should be a number or "types".');
 		return;
 	}
 	
@@ -1889,29 +1997,33 @@ function enchantFunctions(client, args) {
 		else
 			var named = clsname;
 
-		var chants = [];
-
 		if (enchanter.storeVoid.indexOf(item.index) > -1)
 		{
 	        // Look at what type of enchants exist
-	        var map = enchants.enchantMap;
-	        for (var type in map)
+	        for (var cat in enchants.enchantMap)
 	        {
-	        	var arr = map[type];
-		        for (var j = 0; j < arr.length; ++j)
-		        {
-					for (var key in arr[j])
+	        	if (cat == 'clone') continue;
+
+	        	var arr = enchants.enchantMap[cat];
+
+	        	if (item[cat])
+	        	{
+	        		if (DEBUG) server.print("Found item cat: " + cat);
+
+			        for (var type in item[cat])
 			        {
-			        	if (key == "name")
+
+			        	if (type == 'clone') continue;
+
+			        	if (item[cat][type])
 			        	{
-				        	if (item[arr[j][key]])
-				        	{
-				        		var enchName = arr[j][key];
-				        		var nameFormat = util.capitaliseFirstLetter(enchName);
-				        		chants.push(nameFormat);
-				        	}
-				        }
-				    }
+			        		if (DEBUG) server.print("Found item enchant: " + type);
+			        		var ench = item[cat][type];
+			        		var props = item[cat][type].props;
+
+			        		printToPlayer(playerID, '%s %s: {%s}', [named, util.capitaliseFirstLetter(type), util.objToString(props) ]);
+			        	}
+					}
 				}
 	        }
 		}
@@ -1919,11 +2031,6 @@ function enchantFunctions(client, args) {
 			printToPlayer(playerID, "%s is not enchanted", [named]);
 			return;
 		}
-
-		if (enchants.length === 0)
-			printToPlayer(playerID, "%s has no enchantments", [named]);
-		else
-			printToPlayer(playerID, "%s is enchanted with: %s", [named, chants.join(', ')]);
 	}
 	else {
 		var equipment = unit.pullHeroInventory(hero);
@@ -1932,29 +2039,33 @@ function enchantFunctions(client, args) {
 
 		for (var i = 0; i < equipment.length; ++i)
 		{
-			var equip = equipment[i];
-			equip.chants = [];
-			if (enchanter.storeVoid.indexOf(equip.index) > -1)
+			if (enchanter.storeVoid.indexOf(equipment[i].index) > -1)
 			{
+				var entity = equipment[i];
+				entity.chants = [];
 		        // Look at what type of enchants exist
-		        var map = enchants.enchantMap;
-		        for (var type in map)
+		        for (var cat in enchants.enchantMap)
 		        {
-		        	var arr = map[type];
-			        for (var j = 0; j < arr.length; ++j)
-			        {
-						for (var key in arr[j])
+		        	if (cat == 'clone') continue;
+
+		        	var arr = enchants.enchantMap[cat];
+
+		        	if (entity[cat])
+		        	{
+		        		if (DEBUG) server.print("Found item cat: " + cat);
+
+				        for (var type in entity[cat])
 				        {
-				        	if (key == "name")
+
+				        	if (type == 'clone') continue;
+
+				        	if (entity[cat][type])
 				        	{
-					        	if (equip[arr[j][key]])
-					        	{
-					        		var enchName = arr[j][key];
-					        		var nameFormat = util.capitaliseFirstLetter(enchName);
-					        		equip.chants.push(nameFormat);
-					        	}
-					        }
-					    }
+				        		if (DEBUG) server.print("Found item enchant: " + type);
+
+				        		entity.chants.push(util.capitaliseFirstLetter(type));
+				        	}
+						}
 					}
 		        }
 			}
@@ -1974,6 +2085,7 @@ function enchantFunctions(client, args) {
 				printToPlayer(playerID, "%s is enchanted with: %s", [named, equip.chants.join(', ')]);
 			}
 		}
+		printToPlayer(playerID, 'Use -ei [1-6] for detailed information.', []);
 	}
 }
 

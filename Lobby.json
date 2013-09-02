@@ -23,7 +23,6 @@
 				"1:00",
 				"0:45",
 				"0:30",
-				"0:15",
 				"5:15",
 				"5:30",
 				"5:45",
@@ -42,27 +41,14 @@
 			"type": "select",
 			"options": [
 				"Weighted",
-				"Weighted & Enchantable",
-				"Non-weighted & Enchantable",
 				"Non-weighted"
 			]
 		},
-		"Amount": {
+		"Enchants": {
 			"type": "select",
 			"options": [
-				"∞ Waves",
-				"20 Waves",
-				"15 Waves",
-				"10 Waves",
-				"9 Waves",
-				"8 Waves",
-				"7 Waves",
-				"6 Waves",
-				"5 Waves",
-				"4 Waves",
-				"3 Waves",
-				"2 Waves",
-				"1 Wave"
+				"Enchants Disabled",
+				"Enchants Enabled (beta)"
 			]
 		},
 		"Selection": {
