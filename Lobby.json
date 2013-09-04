@@ -37,18 +37,14 @@
 				"8:00"
 			]
 		},
-		"Weights": {
+		"Properties": {
 			"type": "select",
 			"options": [
 				"Weighted",
-				"Non-weighted"
-			]
-		},
-		"Enchants": {
-			"type": "select",
-			"options": [
-				"Enchants Disabled",
-				"Enchants Enabled (beta)"
+				"Weighted e²",
+				"Weighted e³",
+				"Non-weighted",
+				"Enchantable"
 			]
 		},
 		"Selection": {

@@ -48,8 +48,7 @@ exports.pullHeroInventory = function(hero, type) {
 	if (!hero) return;
 
 	var heroItemsEquipped = [];
-	for (var i = HERO_INVENTORY_BEGIN; i <= HERO_INVENTORY_END; i++)
-	{
+	for (var i = HERO_INVENTORY_BEGIN; i <= HERO_INVENTORY_END; i++) {
 		var entity = hero.netprops.m_hItems[i];
 		if (entity === null)
 			continue;
@@ -60,6 +59,21 @@ exports.pullHeroInventory = function(hero, type) {
 		heroItemsEquipped.push(entity);
 	}
 	return heroItemsEquipped;
+}
+
+exports.isPlayerHero = function(entity) {
+	var props = entity.netprops;
+
+	if (!entity.isHero())
+		return false;
+
+	if (props['m_iPlayerID'] === -1)
+		return false;
+
+	if (props['m_iTeamNum'] < 2 || props['m_iTeamNum'] > 3)
+		return false;
+
+	return true;
 }
 
 exports.checkForBoots = function(heroInventory, boots) {
