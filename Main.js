@@ -143,6 +143,8 @@ var settings = {
 	addons: {
 		enchanter: {
 			enabled: false,
+			random: false,
+			shop: false,
 			percentage: 30,
 			onHitEnchantEnts: [],
 			onEquipEnchantEntity: null

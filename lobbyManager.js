@@ -33,8 +33,18 @@ plugin.get('LobbyManager', function(obj){
 	{
 		default:
 		case "Enchantments Disabled": break;
-		case "Enchantments Enabled":
+		case "Enchantments Enabled (Shop)":
 			enchanter.enabled = true;
+			enchanter.shop = true;
+			break;
+		case "Enchantments Enabled (Random)":
+			enchanter.enabled = true;
+			enchanter.random = true;
+			break;
+		case "Enchantments Enabled (Shop + Random)":
+			enchanter.enabled = true;
+			enchanter.random = true;
+			enchanter.shop = true;
 			break;
 	}
 
@@ -57,10 +67,10 @@ plugin.get('LobbyManager', function(obj){
 		case "Mushrooms only":
 			settings.itemTable.customMode = 10;
 			break;
-		case "Aegis & Cursed Rapier":
+		case "Cursed Rapier & Aegis":
 			settings.itemTable.customMode = 11;
 			break;
-		case "Aegis & Rapier":
+		case "Rapier & Aegis":
 			settings.itemTable.customMode = 2;
 			break;
 		case "Weapons":

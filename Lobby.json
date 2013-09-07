@@ -48,7 +48,9 @@
 			"type": "select",
 			"options": [
 				"Enchantments Disabled",
-				"Enchantments Enabled"
+				"Enchantments Enabled (Shop)",
+				"Enchantments Enabled (Random)",
+				"Enchantments Enabled (Shop + Random)"
 			]
 		},
 		"Selection": {
@@ -60,8 +62,8 @@
 				"> 2,000g",
 				"> 2,500g",
 				"Mushrooms only",
-				"Aegis & Cursed Rapier",
-				"Aegis & Rapier",
+				"Cursed Rapier & Aegis",
+				"Rapier & Aegis",
 				"Weapons",
 				"Armor & Defensive",
 				"Caster & Support",

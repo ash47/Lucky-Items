@@ -1671,7 +1671,6 @@ for (var en = 0; en < enchantMap.onHit.length; ++en) {
 	}
 }
 
-var lastEquipment = [];
 timers.setInterval(function() {
 	// Has the map & plugin initialized?
 	if (!settings.mapLoaded || !settings.pluginLoaded) return;
@@ -1693,20 +1692,20 @@ timers.setInterval(function() {
 		var currEquipment = [];
 
 	    // Loop through active equipment & find removed previous
-	    if (lastEquipment.length > 0) {
+	    if (props[playerID].lastEquipment.length > 0) {
 		    for (var i = 0; i < equipment.length; ++i)
 		    {
 		    	var index = equipment[i];
-		    	if (lastEquipment.indexOf(index) > -1) {
+		    	if (props[playerID].lastEquipment.indexOf(index) > -1) {
 		    		// Exists, remove it from the array
-		    		lastEquipment.splice(lastEquipment.indexOf(index), 1);
+		    		props[playerID].lastEquipment.splice(props[playerID].lastEquipment.indexOf(index), 1);
 		    	}
 		    }
-		   	if (lastEquipment.length > 0) {
+		   	if (props[playerID].lastEquipment.length > 0) {
 		   		// Found items that weren't there before
 		   		// Pull the previous entities, find their modifiers, and remove them
-			    for (var i = 0; i < lastEquipment.length; ++i) {
-			    	var ent = lastEquipment[i];
+			    for (var i = 0; i < props[playerID].lastEquipment.length; ++i) {
+			    	var ent = props[playerID].lastEquipment[i];
 			    	if (!ent || ent == null) continue; // Skip
 			    	if (ent.enchants) {
 				        // Look at what type of enchants exist
@@ -1758,7 +1757,7 @@ timers.setInterval(function() {
 		        }
 	    	}
 	    }
-	    lastEquipment = currEquipment;
+	    props[playerID].lastEquipment = currEquipment;
 	}
 }, 100);
 

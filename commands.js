@@ -91,7 +91,7 @@ function enchantFunctions(client, args) {
 				var reqlevel = arr[i].minimumHeroLevel;
 				var props = arr[i].props;
 				var maxLVL = arr[i].max;
-				var cost = arr[i].cost.join('/');
+				var cost = arr[i].cost.join(' / ');
 				playerManager.print(playerID, '%s: %s (LVL %s+, COST: [%s])', [util.capitaliseFirstLetter(name), desc, reqlevel, cost]);
 			}
 		}
@@ -227,6 +227,10 @@ function enchantItem(client, args) {
 	var playerID = client.netprops.m_iPlayerID;
 	if (!enchanter.enabled) {
 		playerManager.print(playerID, 'Enchanter module not enabled for this lobby.', []);
+		return;
+	}
+	if (enchanter.enabled && !enchanter.shop) {
+		playerManager.print(playerID, 'Shop module not enabled for this lobby.', []);
 		return;
 	}
 	var hero = client.netprops.m_hAssignedHero;

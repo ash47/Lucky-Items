@@ -74,7 +74,10 @@ function giveItem(playerID, item) {
 				var entity = hero.netprops.m_hItems[i];
 				// entity returns null when a combineable item combines to an item already in the player's inventory.
 				if (entity === null) return false;
-				
+				// Possible enchant our loot
+				if (enchanter.enabled && enchanter.random) {
+					itemManager.enchantLoot(entity, item, playerID);
+				}
 				// Alter item properties
 				itemManager.changeItemProperties(entity, item, playerID);
 				return true;

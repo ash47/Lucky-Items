@@ -315,7 +315,7 @@ function enchantLoot(entity, item, playerID) {
         for (var i = 0; i < possibleEnchants.length; ++i) {
           var enchant = possibleEnchants[i];
           if (DEBUG) server.print("Enchantment minimum level: " + enchant.minlevel);
-          if (enchant.minlevel > heroLevel) {}
+          if (enchant.minimumHeroLevel > heroLevel) {}
           else {
             tmp.push(enchant);
             if (DEBUG) server.print("Enchant pushed, acceptable: " + enchant.name);
@@ -349,7 +349,7 @@ function enchantLoot(entity, item, playerID) {
 			};
 			 
 			var list = [1, 2, 3];
-			var weight = [0.5, 0.3, 0.2];
+			var weight = [0.5, 0.3, 0.1];
 			var random_item = getRandomItem(list, weight);
 
 			// Pick some enchantments for our item
@@ -374,6 +374,23 @@ function enchantLoot(entity, item, playerID) {
 
 					var name = util.capitaliseFirstLetter(enchant.name);
 					var level = util.getRandomNumberExcludeZero(4);
+
+          function createProps(ent, name) {
+            if(!ent.enchants[name])
+              ent.enchants[name] = {};
+
+            if(!ent.enchants[name].props)
+              ent.enchants[name].props = {level: 0};
+
+            return ent;
+          }
+
+          if (!entity.enchants) 
+            entity.enchants = {};
+
+          if (!entity.enchants[enchant.name])
+            entity = createProps(entity, enchant.name);
+
 					enchant.setup(entity, enchant.name, level);
 
 					// if (DEBUG) server.print("Entity has enchant? " + entity[enchant.name]);
@@ -389,6 +406,12 @@ function enchantLoot(entity, item, playerID) {
 						var level = util.getRandomNumberExcludeZero(4);
 						enchantNames.push(name);
 						levels.push(level);
+            if (!entity.enchants) 
+              entity.enchants = {};
+
+            if (!entity.enchants[enchant.name])
+              entity = createProps(entity, enchant.name);
+
 						enchant.setup(entity, enchant.name, level);
 					}
 					playerManager.print(playerID, "%s enchanted %s [levels %s] %s", [named, enchantNames.join(", "), levels.join(", "), type]);

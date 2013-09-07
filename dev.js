@@ -36,6 +36,8 @@ function load() {
 
 	settings.itemTable.properties.sellable = true;
 	enchanter.enabled = true;
+	enchanter.random = false;
+	enchanter.shop = true;
 	enchanter.percentage = 100;
 
 	console.addClientCommand("load", liFill);
