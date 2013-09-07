@@ -14,8 +14,8 @@ if (DEBUG) {
 function load() {
 	settings.leadTime.length = 0;
 	settings.nextBase.length = 0;
-	settings.leadTime = ['0:02'];
-	settings.nextBase = ['0:02'];
+	settings.leadTime = ['0:08'];
+	settings.nextBase = ['0:08'];
 	var nextBase = util.convertMinutesToSeconds(settings.nextBase[0]);
 
 	if (nextBase <= 120)
@@ -30,8 +30,8 @@ function load() {
 	// setupItemTable("Caster/Support items only");
 
 	// Custom Mode 0 allows only a few items in.
-	settings.itemTable.customMode = 1;
-	settings.itemTable.powerWeight = 3;
+	settings.itemTable.customMode = 11;
+	settings.itemTable.powerWeight = 1;
 	itemManager.buildItemTable();
 
 	settings.itemTable.properties.sellable = true;
@@ -49,11 +49,10 @@ function load() {
 		{
 			count += 1
 			for (var i = HERO_INVENTORY_BEGIN; i <= HERO_STASH_END; ++i) {
-				itemName = getUniqueItemName(playerID, unitManager.pullHeroEquipment(hero, 1));
-				giveItemToPlayer(itemName, playerID);
+				item = itemManager.getUniqueItemName(playerID);
+				playerManager.giveItem(playerID, item);
 			}
-			if (count >= 20)
-				break;
+			if (count >= 20) break;
 		}
 		while( unitManager.isInventoryAvailable(hero) || unitManager.isBankAvailable(hero) );
 	}
@@ -69,6 +68,4 @@ function load() {
 			dota.remove(item);
 		}
 	}
-
-
 }

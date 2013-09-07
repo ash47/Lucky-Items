@@ -55,15 +55,13 @@ var settings = {
 	dispenseTimeout: 0.6,		// how many seconds to wait before giving each player their items
 	itemDropFavorPercent: 15,   // percentage chance to get a favored item after a low one
 	gamePhase: 1,				// current match phase. 1 - Early Game; 2 - MidGame; 3 - Late Game
-	maxTries: 8,				// prevent an infinite search loop, break
+	maxTries: 12,				// prevent an infinite search loop, break
 	maxTriesLoot: [				// we can't find our player an item, default to these
-		'item_cheese',
-		'item_winter_mushroom',
-		'item_aegis'
-	],
-	reLootPercentage: 75,		// a percentage chance to random twice on specific items
-	reLootTable: [				// items to perform another random on.
 		'item_aegis',
+		'item_halloween_rapier'
+	],
+	reLootPercentage: 65,		// a percentage chance to random twice on specific items
+	reLootTable: [				// items to perform another random on.
 		'item_cheese',
 		'item_winter_mushroom'
 	],
@@ -71,7 +69,8 @@ var settings = {
 		'item_rapier',
 		'item_aegis',
 		'item_cheese',
-		'item_winter_mushroom'
+		'item_winter_mushroom',
+		'item_halloween_rapier'
 	],
 	doNotPutInStash: ['item_aegis'],
 	// This is the inventory queue to manage items when a player cannot be given more items.
@@ -145,12 +144,12 @@ var settings = {
 		enchanter: {
 			enabled: false,
 			percentage: 30,
-			onHitEnchantEntity: null,
+			onHitEnchantEnts: [],
 			onEquipEnchantEntity: null
 		},
 		// Tailors loot on a per-hero/ability basis during plugin initialization.
 		wardrobe: {
-			enabled: true,
+			enabled: false,
 			loaded: false,
 			checkAbilities: false,
 			heroFile: keyvalue.parseKVFile("hero_base.kv"),
@@ -191,7 +190,8 @@ var settings = {
 				attributePrimary: 10 // (added weight to, and subtracted weights from others)
 			}
 		}
-	}
+	},
+	dotaPlayerManager: null
 };
 var enchanter = settings.addons.enchanter;
 var wardrobe = settings.addons.wardrobe;
@@ -206,6 +206,7 @@ var itemManager = require('itemManager.js');		// Load exports related to item ha
 var enchants = require('enchantments.js');			// Load the item enchantments
 require('commands.js');								// Load the plugin commands
 require('dev.js');									// Load developer mode
+require('lobbyManager.js');							// Load lobby manager
 
 // ==========================================
 // Item Dispenser
@@ -214,10 +215,12 @@ timers.setInterval(function() {
 	// Map has not initialized
 	if (!settings.mapLoaded)
 		return;
+
 	// No players connected
 	var playerIDs = playerManager.getConnectedPlayerIDs();
 	if (playerIDs.length === 0)
 		return;
+
 	// Game state invalid
 	if (util.getGameState() !== dota.STATE_GAME_IN_PROGRESS)
 		return;
@@ -225,7 +228,8 @@ timers.setInterval(function() {
 	// ==========================================
 	// Dispenser: Manages item drops
 	// ==========================================
-	if (!settings.pluginLoaded) {
+	if (!settings.pluginLoaded)
+	{
 		// Load the plugin
 		settings.pluginLoaded = true;
 
@@ -247,9 +251,8 @@ timers.setInterval(function() {
 		playerManager.printAll(settings.dropNotifications.lead + cmdmsg, [selected]);
 
 		// Re-build our item table if it does not exist
-		if (settings.itemTable.instance === null) {
+		if (settings.itemTable.instance === null)
 			itemManager.buildItemTable();
-		}
 
 		// Tailor per-player loot if the wardrobe addon is enabled
 		if (settings.itemTable.useWeights && wardrobe.enabled) {
@@ -306,7 +309,7 @@ timers.setInterval(function() {
 			settings.playerList.push(players[i]);
 		}
 
-		generateLoot();
+		startDispensing();
 
 		if (settings.waveLimit > 0 && settings.currentWave >= settings.waveLimit) {
 			settings.pluginHalted = true;
@@ -318,175 +321,38 @@ timers.setInterval(function() {
 // ==========================================
 // Begin Plugin Functions
 // ==========================================
-function generateLoot() {
-	for (var i = 0; i < settings.playerList.length; ++i) {
-		var playerID = settings.playerList[i];
-		// Retrieve a unique random item name
-		var item = getUniqueItemName(playerID);
-		// Give the player their item
-		giveItemToPlayer(item, playerID);
-		// Here we perform our sub-par items re-loot chance
-		if (settings.reLootTable.indexOf(item[0]) > -1 && util.getRandomNumber(100) < settings.reLootPercentage) {
-			// Get unique item name
-			item = getUniqueItemName(playerID);
-			// Disable the sounds
-			settings.sounds.enabled = false;
-			// Give additional item to our player
-			giveItemToPlayer(item, playerID);
-			// Enable the sounds
-			settings.sounds.enabled = true;
+function startDispensing() {
+	var timer = timers.setInterval(function() {
+		if (settings.playerList.length > 0)
+		{
+			// Randomize the playerList
+			util.shuffle(settings.playerList);
+			// Pop a playerID
+			var playerID = settings.playerList.pop();
+			// Retrieve a unique random item name
+			var item = itemManager.getUniqueItemName(playerID);
+			// Give the player their item
+			playerManager.giveItem(playerID, item);
+			// Here we perform our sub-par items re-loot chance
+			if (settings.reLootTable.indexOf(item[0]) > -1 && util.getRandomNumber(100) < settings.reLootPercentage)
+			{
+				// Get unique item name
+				item = itemManager.getUniqueItemName(playerID);
+				// Disable the sounds
+				settings.sounds.enabled = false;
+				// Give additional item to our player
+				playerManager.giveItem(playerID, item);
+				// Enable the sounds
+				settings.sounds.enabled = true;
+			}
 		}
-	}
-	// Clear the player list
-	settings.playerList.length = 0;
-}
-
-function getUniqueItemName(playerID) {
-
-	// Pull the items we've already randomed to this player
-	var equipmentHandouts = playerManager.getProp(playerID, 'equipmentHandouts');
-	// Pull the last equipment snapshot of this player.
-	var snappedLastEquipment = playerManager.getProp(playerID, 'snapHeroEquip');
-
-	var boots = [
-		"item_boots",
-		"item_travel_boots",
-		"item_tranquil_boots",
-		"item_arcane_boots",
-		"item_power_treads",
-		"item_phase_boots"
-	];
-
-	var hasBoots = unitManager.checkForBoots(snappedLastEquipment, boots);
-
-	var item;
-	var rolls = 0;
-	do
-	{
-		rolls += 1;
-		// Need to have a limit somewhere
-		if (rolls <= settings.maxTries)
-			item = itemManager.random(playerID);
 		else {
-			var possibleItems = settings.maxTriesLoot;
-			var selected = util.randomElement(possibleItems);
-			item = itemManager.getEntryByClassname(selected);
-			break;
+			// Clear the player list
+			settings.playerList.length = 0;
+			// Clear the timer
+			timers.clearInterval(timer);
 		}
-		// Legit roll of a duplicated item
-		if (settings.doNotConsiderDupes.indexOf(item[0]) > -1)
-			break;
-	}
-	while (snappedLastEquipment.indexOf(item[0]) > -1 			// Located in our hero's inventory
-			|| equipmentHandouts.indexOf(item[0]) > -1 			// Player already rolled this item
-			|| (hasBoots && boots.indexOf(item[0]) > -1));		// Player already has boots
-
-	// Is the item we rolled considered not a duplicate?
-	if (settings.doNotConsiderDupes.indexOf(item[0]) === -1) {
-		// Has the player 
-		if (!playerManager.getProp(playerID, 'nextDropFavored'))
-			if (item[2] < 2050)
-				playerManager.setProp(playerID, 'nextDropFavored', true);
-		else
-			playerManager.getProp(playerID, 'nextDropFavored', false);
-
-		equipmentHandouts.push(item[0]);
-
-		playerManager.setProp(playerID, 'equipmentHandouts', equipmentHandouts);
-
-		if ( !settings.itemTable.countLimitPerTeam[item[0]] )
-			settings.itemTable.countLimitPerTeam[item[0]] = 0;
-
-		settings.itemTable.countLimitPerTeam[item[0]] += 1;
-
-		if (settings.itemTable.limitPerTeam[item[0]] && settings.itemTable.countLimitPerTeam[item[0]] === settings.itemTable.limitPerTeam[item[0]]) {
-			var teamID = playerManager.getTeamIDFromPlayerID(playerID);
-			if (teamID !== null) {
-				var playerIDs = playerManager.getConnectedPlayerIDs(teamID);
-				for (var i = 0; i < playerIDs.length; ++i)
-				{
-					var teamPlayerID = playerIDs[i];
-					// Skip the player that landed the item
-					if (teamPlayerID === playerID)
-						continue;
-
-					var exclusionList = playerManager.getProp(teamPlayerID, "equipmentHandouts");
-
-					if ( exclusionList.indexOf(item[0]) > -1 )
-						continue;
-
-					exclusionList.push(item[0]);
-					playerManager.setProp(teamPlayerID, "equipmentHandouts", exclusionList);
-				}
-			}
-		}
-		if ( settings.itemTable.componentExclude.items[item[0]] ) {
-			var entries = settings.itemTable.componentExclude.items[item[0]];
-			for (var i = 0; i < entries.length; ++i) {
-				equipmentHandouts.push(entries[i]);
-			}
-		}
-	}
-
-	return item;
-}
-
-function giveItemToPlayer(item, playerID) {
-	// We can't find their hero, queue the item
-	var hero = playerManager.grabHero(playerID);
-	if (hero === null) {
-		playerManager.addToQueue(item, playerID);
-		return false;
-	}
-	// Is the hero alive and well?
-	if (unitManager.getLifeState(hero) === UNIT_LIFE_STATE_ALIVE) {
-		// Do we have space in the player's inventory or stash?
-		switch(true) {
-			case unitManager.isInventoryAvailable(hero):
-				var IDX_START = HERO_INVENTORY_BEGIN;
-				var IDX_END = HERO_INVENTORY_END;
-				break;
-			case unitManager.isBankAvailable(hero):
-				var IDX_START = HERO_STASH_BEGIN;
-				var IDX_END = HERO_STASH_END;
-				break;
-			default:
-				playerManager.addToQueue(item, playerID);
-				return false;
-				break;
-		}
-		for (var i = IDX_START; i <= IDX_END; ++i) {
-			// Loop through the inventory until we find a free slot
-			if (hero.netprops.m_hItems[i] === null) {
-				// Give the item to our hero
-				var clsname = item[0];
-				dota.giveItemToHero(clsname, hero);
-				// Pull the item we just gave them in the same slot
-				var entity = hero.netprops.m_hItems[i];
-				// entity returns null when a combineable item combines to an item already in the player's inventory.
-				if (entity === null) return false;
-				// Possibly enchant our item
-				if (enchanter.enabled)
-					itemManager.enchantLoot(entity, item, playerID);
-				// Alter item properties
-				itemManager.changeItemProperties(entity, item, playerID);
-				return true;
-			}
-		}
-	}
-	else {
-		playerManager.addToQueue(item, playerID);
-		return false;
-	}
-}
-
-function cutAudio(client, sound) {
-	dota.sendAudio(client, true, sound);
-}
-
-
-function applyModifier(target, base, clsname, ref, options) {
-	dota.addNewModifier( target, base, clsname, ref, options );
+	}, settings.dispenseTimeout * 1000);
 }
 
 game.hook("Dota_OnUnitThink", onUnitThink);
@@ -503,51 +369,6 @@ function onUnitThink(unit) {
 		dota.setUnitState(enchanter.onEquipEnchantEntity, dota.UNIT_STATE_BANISHED, true);
 	}
 }
-
-// ==========================================
-// Lobby Setup
-// ==========================================
-var lobbyManager;
-plugin.get('LobbyManager', function(obj){
-	lobbyManager = obj;
-	var optionTime = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Speed"];
-	if (optionTime) {
-		settings.leadTime.length = 0;
-		settings.nextBase.length = 0;
-		settings.leadTime = [optionTime];
-		settings.nextBase = [optionTime];
-
-		var s = util.convertMinutesToSeconds(optionTime);
-
-		if (s < settings.sounds.timeThreshold)
-			settings.sounds.enabled = false;
-
-		if (s < settings.dropNotifications.timeThreshold)
-			settings.dropNotifications.enabled = false;
-	}
-
-	var optionProp = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Properties"];
-	switch(optionProp)
-	{
-		default:
-		case "Weighted": break;
-		case "Weighted e²":
-			settings.itemTable.powerWeight = 2;
-			break;
-		case "Weighted e³":
-			settings.itemTable.powerWeight = 3;
-			break;
-		case "Non-weighted":
-			settings.itemTable.useWeights = false;
-			break;
-		case "Enchantable":
-			enchanter.enabled = true;
-			break;
-	}
-
-	var optionSelection = lobbyManager.getOptionsForPlugin("WeaponMayhem")["Selection"];
-	itemManager.buildItemTable(optionSelection);
-});
 
 // ==========================================
 // Addon: Wardrobe

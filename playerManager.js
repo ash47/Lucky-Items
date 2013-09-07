@@ -13,11 +13,12 @@ for (var i = 0; i < playerProps.length; ++i)
 		buildLootTable: true,		// Boolean to tell plugin to build a loot table
 		enchantTimeouts: {},
 		lastAttacker: null,
-		onEquipModifiers: []
+		onEquipModifiers: [],
+		lastEquipment: []
 	};
 }
 
-function setPlayerProp(playerID, prop, value) {
+function setProp(playerID, prop, value) {
 	if(!playerProps[playerID])
 		return undefined;
 
@@ -25,7 +26,7 @@ function setPlayerProp(playerID, prop, value) {
 	return true;
 }
 
-function getPlayerProp(playerID, prop) {
+function getProp(playerID, prop) {
 	if(!playerProps[playerID])
 		return undefined;
 
@@ -39,13 +40,60 @@ function getProps() {
 	return playerProps;
 }
 
-function addItemToQueue(item, playerID) {
+function giveItem(playerID, item) {
+	// We can't find their hero, queue the item
+	var hero = grabHero(playerID);
+	if (hero === null) {
+		addToQueue(playerID, item);
+		return false;
+	}
+	// Is the hero alive and well?
+	if (unitManager.getLifeState(hero) === UNIT_LIFE_STATE_ALIVE) {
+		// Do we have space in the player's inventory or stash?
+		switch(true) {
+			case unitManager.isInventoryAvailable(hero):
+				var IDX_START = HERO_INVENTORY_BEGIN;
+				var IDX_END = HERO_INVENTORY_END;
+				break;
+			case unitManager.isBankAvailable(hero):
+				var IDX_START = HERO_STASH_BEGIN;
+				var IDX_END = HERO_STASH_END;
+				break;
+			default:
+				addToQueue(playerID, item);
+				return false;
+				break;
+		}
+		for (var i = IDX_START; i <= IDX_END; ++i) {
+			// Loop through the inventory until we find a free slot
+			if (hero.netprops.m_hItems[i] === null) {
+				// Give the item to our hero
+				var clsname = item[0];
+				dota.giveItemToHero(clsname, hero);
+				// Pull the item we just gave them in the same slot
+				var entity = hero.netprops.m_hItems[i];
+				// entity returns null when a combineable item combines to an item already in the player's inventory.
+				if (entity === null) return false;
+				
+				// Alter item properties
+				itemManager.changeItemProperties(entity, item, playerID);
+				return true;
+			}
+		}
+	}
+	else {
+		addToQueue(playerID, item);
+		return false;
+	}
+}
+
+function addToQueue(playerID, item) {
 	// Pull our stored queue property
-	var prop = getPlayerProp(playerID, 'queue');
+	var prop = getProp(playerID, 'queue');
 	// Push the new item into it
 	prop.push(item);
 	// Set the new queue property
-	setPlayerProp(playerID, 'queue', prop);
+	setProp(playerID, 'queue', prop);
 }
 
 function grabHero(playerID) {
@@ -113,7 +161,7 @@ timers.setInterval(function() {
 				// Shift the beginning item in our player queue
 				var itemToGive = playerProps[playerID].queue.shift();
 				// Give it to our player
-				giveItemToPlayer(itemToGive, playerID);
+				giveItem(playerID, itemToGive);
 			}
 			// If we have more items in the queue, send a reminder
 			if (playerProps[playerID].queue.length >= settings.queue.remindNItems && !playerProps[playerID].queueNotified) {
@@ -162,12 +210,122 @@ function getConnectedPlayerIDs(teamID) {
 	return playing;
 }
 
+// http://d2ware.net/plugin?Builder1
+// Sets the clients gold
+function setPlayerGold(playerID, gold) {
+	// Validate gold
+	if (DEBUG) server.print("setPlayerGold: Setting new gold");
+	if (gold == null
+		|| gold.r == null
+		|| gold.u == null) {
+		if (DEBUG) server.print("setPlayerGold: Setting new gold: gold value is NULL");
+		return false;
+	}
+	
+	// Grab client
+	var client = dota.findClientByPlayerID(playerID);
+	if (client === null) {
+		if (DEBUG) server.print("setPlayerGold: Could not find client.");
+		return false;
+	}
+	
+	// Grab the clients team
+	var playerTeamID = client.netprops.m_iTeamNum;
+
+	// Grab the player resource manager
+	var dotaPlayerManager = settings.dotaPlayerManager;
+	
+	// Set their gold, depending on their team
+	if (playerTeamID === dota.TEAM_RADIANT) {
+		dotaPlayerManager.netprops.m_iReliableGoldRadiant[playerID] = gold.r;
+		dotaPlayerManager.netprops.m_iUnreliableGoldRadiant[playerID] = gold.u;
+	}
+	else if (playerTeamID === dota.TEAM_DIRE) {
+		dotaPlayerManager.netprops.m_iReliableGoldDire[playerID] = gold.r;
+		dotaPlayerManager.netprops.m_iUnreliableGoldDire[playerID] = gold.u;
+	}
+	else {
+		if (DEBUG) server.print("setPlayerGold: Setting new gold: FALSE, Invalid TeamID");
+		return false;
+	}
+	if (DEBUG) server.print("setPlayerGold: Success");
+	return true;
+}
+// Gets the client gold
+function getPlayerGold(playerID) {
+	// Grab client
+	var client = dota.findClientByPlayerID(playerID);
+	if (client === null)
+		return false;
+
+	if (DEBUG) server.print("getPlayerGold: Found client");
+	
+	// Grab the clients team
+	var playerTeamID = client.netprops.m_iTeamNum;
+	if (DEBUG) server.print("getPlayerGold: Found teamID" + playerTeamID);
+
+	var dotaPlayerManager = settings.dotaPlayerManager;
+	
+	// Read their gold, where we read depends on their team
+	if (playerTeamID === dota.TEAM_RADIANT) {
+		var reliableGold = dotaPlayerManager.netprops.m_iReliableGoldRadiant[playerID];
+		var unreliableGold = dotaPlayerManager.netprops.m_iUnreliableGoldRadiant[playerID];
+	}
+	else if (playerTeamID === dota.TEAM_DIRE) {
+		var reliableGold = dotaPlayerManager.netprops.m_iReliableGoldDire[playerID];
+		var unreliableGold = dotaPlayerManager.netprops.m_iUnreliableGoldDire[playerID];
+	}
+	else
+		return null;
+	
+	// Return table with money data
+	return {r:reliableGold,
+			u:unreliableGold}
+}
+// Takes gold from a player
+function purchase(playerID, cost) {
+	// Grab client
+	var client = dota.findClientByPlayerID(playerID);
+	if (client === null)
+		return false;
+
+	if (DEBUG) server.print("Purchase: Found client");
+	
+	// Grab and validate gold
+	var gold = getPlayerGold(playerID);
+	if (gold == null) {
+		if (DEBUG) server.print("Purchase: gold = null");
+		return false;
+	}
+	if (DEBUG) server.print("Unreliable gold: " + gold.u);
+	if (DEBUG) server.print("Reliable gold: " + gold.r);
+	if (DEBUG) server.print("Cost of Enchantment: " + cost);
+	
+	// They can't afford
+	if (gold.r + gold.u < cost) {
+		if (DEBUG) server.print("Purchase: reliable + unreliable gold less than " + cost);
+		return false;
+	}
+	
+	// Calculate new gold values
+	gold.u -= cost;
+	if (gold.u < 0) {
+		gold.r += gold.u;
+		gold.u = 0;
+	}
+	
+	// Store new values
+	return setPlayerGold(playerID, gold);
+}
+
 // Exports
+exports.purchase = purchase;
+exports.giveItem = giveItem;
 exports.getTeamIDFromPlayerID = getTeamIDFromPlayerID;
 exports.getConnectedPlayerIDs = getConnectedPlayerIDs;
-exports.addToQueue = addItemToQueue;
-exports.setProp = setPlayerProp;
-exports.getProp = getPlayerProp;
+exports.addToQueue = addToQueue;
+exports.setProp = setProp;
+exports.getProp = getProp;
 exports.getProps = getProps;
 exports.grabHero = grabHero;
 exports.print = printToPlayer;

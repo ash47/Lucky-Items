@@ -9,6 +9,14 @@ game.hook("OnMapStart", onMapStart);
 function onMapStart() {
 	settings.mapLoaded = true;
 
+	// Grab the player manager
+	settings.dotaPlayerManager = game.findEntityByClassname(-1, "dota_player_manager");
+	if (!settings.dotaPlayerManager || settings.dotaPlayerManager == null)
+		server.print('\n\nFAILED TO FIND RESOURCE HANDLE\n\n');
+
+	// Halloween Rapier particles
+	dota.loadParticleFile('particles/hw_fx.pcf');
+
 	if (enchanter.enabled) {
 		// Bloodlust
 		dota.loadParticleFile('particles/units/heroes/hero_ogre_magi.pcf');
@@ -16,6 +24,7 @@ function onMapStart() {
 		dota.loadParticleFile('particles/units/heroes/hero_crystalmaiden.pcf');
 		dota.loadParticleFile('particles/units/heroes/hero_doom_bringer.pcf');
 		dota.loadParticleFile('particles/units/heroes/hero_dark_seer.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_bounty_hunter.pcf');
 
 		dota.loadParticleFile('particles/units/heroes/hero_bane.pcf');
 		dota.loadParticleFile('particles/units/heroes/hero_omniknight.pcf');
@@ -34,6 +43,30 @@ function onMapStart() {
 		dota.loadParticleFile('particles/units/heroes/hero_magnataur.pcf');
 		dota.loadParticleFile('particles/units/heroes/hero_witchdoctor.pcf');
 		dota.loadParticleFile('particles/units/heroes/hero_lycan.pcf');
+
+		dota.loadParticleFile('particles/units/heroes/hero_medusa.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_mirana.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_antimage.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_juggernaut.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_sandking.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_keeper_of_the_light.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_troll_warlord.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_viper.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_invoker.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_gyrocopter.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_sniper.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_slardar.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_enigma.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_necrolyte.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_ursa.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_warlock.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_death_prophet.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_faceless_void.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_luna.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_leshrac.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_huskar.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_razor.pcf');
+		dota.loadParticleFile('particles/units/heroes/hero_night_stalker.pcf');
 		game.precacheModel('models/heroes/lycan/lycan_wolf.mdl');
 
 		// Make a dummy entity to store our item enchantment abilities

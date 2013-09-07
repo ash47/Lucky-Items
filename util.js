@@ -57,7 +57,7 @@ exports.objToString = function(obj) {
     var str = '';
     for (var p in obj) {
         if (obj.hasOwnProperty(p)) {
-            str += p + ': ' + obj[p] + ' ';
+            str += p + ': ' + obj[p] + ', ';
         }
     }
     return str;

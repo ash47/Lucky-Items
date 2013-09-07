@@ -41,10 +41,14 @@
 			"type": "select",
 			"options": [
 				"Weighted",
-				"Weighted e²",
-				"Weighted e³",
-				"Non-weighted",
-				"Enchantable"
+				"Non-weighted"
+			]
+		},
+		"Enchantments": {
+			"type": "select",
+			"options": [
+				"Enchantments Disabled",
+				"Enchantments Enabled"
 			]
 		},
 		"Selection": {
@@ -55,11 +59,13 @@
 				"> 1,500g",
 				"> 2,000g",
 				"> 2,500g",
+				"Mushrooms only",
+				"Aegis & Cursed Rapier",
 				"Aegis & Rapier",
-				"Early Game",
-				"Caster & Support Only",
-				"Weapons Only",
-				"Armor & Defensive Only"
+				"Weapons",
+				"Armor & Defensive",
+				"Caster & Support",
+				"Early Game"
 			]
 		}
 	}
