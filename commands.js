@@ -2,20 +2,19 @@
 // Client Commands
 // ==========================================
 //
-console.addClientCommand("li", clientFunctions);
-function clientFunctions(client, args) {
+console.addClientCommand("li", listCommands);
+function listCommands(client, args) {
 	var playerID = client.netprops.m_iPlayerID;
-	playerManager.print(playerID, "commands are:", []);
-	playerManager.print(playerID, "-queue (see inside queue)", []);
-	playerManager.print(playerID, "-queue clear (destroy items)", []);
+	playerManager.print(playerID, "-queue (show queue items)");
+	playerManager.print(playerID, "-queue clear (destroys all)");
 	if (enchanter.enabled) {
-		playerManager.print(playerID, "-ei (see all enchant descriptions)", []);
-		playerManager.print(playerID, "-ei 0 (scan inventory items for enchants)", []);
-		playerManager.print(playerID, "-ei 1-6 (see specific item enchant properties)", []);
-		playerManager.print(playerID, "-enchant 1-6 <name> (enchant item)", []);
+		playerManager.print(playerID, "-ei (show all enchants' descriptions)");
+		playerManager.print(playerID, "-ei 0 (scan inventory for enchants)");
+		playerManager.print(playerID, "-ei 1-6 (show slotted enchant properties, if any)");
+		if (enchanter.shop) {
+			playerManager.print(playerID, "-enchant 1-6 <name> (enchant item)");
+		}
 	}
-	else
-		playerManager.print(playerID, "-ei (disabled, no item enchants)", []);
 }
 
 console.addClientCommand("queue", queueFunctions);
@@ -33,24 +32,29 @@ function queueFunctions(client, args) {
 		var items = [];
 		for (var i = 0; i < props[playerID].queue.length; ++i) {
 			var entry = props[playerID].queue[i];
-			var string = itemManager.getStringName(entry[0]);
+			var clsname = entry[0];
+			var string = itemManager.getStringName(clsname);
 			items.push(string);
 		}
-		if (items.length > 4) {
-			items = items.splice(0, 4);
+		if (items.length >= settings.queue.maxNextLength) {
+			items = items.splice(0, settings.queue.maxNextLength);
 		}
-		var inline = items.join(', ');
+		var itemsJoined = items.join(', ');
 		playerManager.print(playerID, 'There are %s items in the queue', [queueLength]);
-		playerManager.print(playerID, 'Next items in queue: %s', [inline]);
+		playerManager.print(playerID, 'Next items in queue: %s', [itemsJoined]);
 	}
 	if (args.length > 1)
 		return;
-
 	else {
 		switch(args[0])
 		{
-			default:
-
+			default: break;
+			case "unpause":
+				if (props[playerID].queuePaused)
+					props[playerID].queuePaused = false;
+			case "pause":
+				props[playerID].queuePaused = true;
+				playerManager.print(playerID, "Paused. All items in the queue are in limbo. Use -queue unpause");
 				break;
 			case "clear":
 				props[playerID].queue.length = 0;
@@ -92,12 +96,17 @@ function enchantFunctions(client, args) {
 				var props = arr[i].props;
 				var maxLVL = arr[i].max;
 				var cost = arr[i].cost.join(' / ');
-				playerManager.print(playerID, '%s: %s (LVL %s+, COST: [%s])', [util.capitaliseFirstLetter(name), desc, reqlevel, cost]);
+				if (enchanter.shop) {
+					playerManager.print(playerID, '%s: %s (LVL %s+, COST: [%s])', [util.capitaliseFirstLetter(name), desc, reqlevel, cost]);
+				}
+				else {
+					playerManager.print(playerID, '%s: %s', [util.capitaliseFirstLetter(name), desc]);
+				}
 			}
 		}
 		return;
 	}
-		
+
 	if (args.length !== 1) {
 		playerManager.print(playerID, 'Use -ei # or types.');
 		return;
@@ -108,20 +117,20 @@ function enchantFunctions(client, args) {
 		playerManager.print(playerID, '# should be a number.');
 		return;
 	}
-	
+
 	invSlot--;
 	if (invSlot < -1 || invSlot > 5) {
 		playerManager.print(playerID, 'Use a value between 0 | 1 and 6.');
 		return;
 	}
-	
+
 	if (invSlot !== -1) {
 		var item = hero.netprops.m_hItems[invSlot];
 		if (item === null) {
 			playerManager.print(playerID, 'There is no item in this slot.');
 			return;
 		}
-			
+
 		var clsname = item.getClassname();
 		var named = itemManager.getStringName(clsname);
 
@@ -207,7 +216,7 @@ function enchantFunctions(client, args) {
 				var named = itemManager.getStringName(clsname);
 
 				if (equip.chants && equip.chants.length > 0) {
-					playerManager.print(playerID, "(Slot %s) %s is enchanted with: %s", [(i + 1), named, equip.chants.join(', ')]);
+					playerManager.print(playerID, "(Slot %s)%s is enchanted with: %s", [(i + 1), named, equip.chants.join(', ')]);
 				}
 			}
 			playerManager.print(playerID, 'Use -ei [1-6] for detailed information.', []);
@@ -246,7 +255,7 @@ function enchantItem(client, args) {
 		playerManager.print(playerID, '# should be a number.');
 		return;
 	}
-	
+
 	invSlot--;
 	if (invSlot < 0 || invSlot > 5) {
 		playerManager.print(playerID, 'Use value between 1 and 6.');
@@ -327,7 +336,7 @@ function enchantItem(client, args) {
 
 			var itemName = itemManager.getStringName(item.getClassname());
 			var enchantmentFormatName = util.capitaliseFirstLetter(currEnchant.name);
-			playerManager.print(playerID, "[%sg] Enchanted %s with %s (%s/%s)", [currEnchant.cost[costidx], itemName, enchantmentFormatName, newLevel, currEnchant.max]);
+			playerManager.print(playerID, "[%sg] Enchanted%s with %s (%s/%s)", [currEnchant.cost[costidx], itemName, enchantmentFormatName, newLevel, currEnchant.max]);
 			var props = item.enchants[currEnchant.name].props;
 			playerManager.print(playerID, "Extra properties: {%s}", [util.objToString(props)]);
 			break;

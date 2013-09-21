@@ -9,15 +9,15 @@ var g_plugin = {
 	version: "1.4.2",
 	credits: {
 		ocnyd6: "making the Fighting Chance plugin",
-        fr0sZ: "asking thought-provoking scenario questions",
-        m28: "d2ware, timers library",
-        smjsirc: "tet etc",
-        d2wareplayers: "because!",
-        humbug: "helping",
-        chirpers: "good suggestions",
-        ash47: "helping alot, used code, examples",
-        balloontag: "bits of code"
-    },
+		fr0sZ: "asking thought-provoking scenario questions",
+		m28: "d2ware, timers library",
+		smjsirc: "tet etc",
+		d2wareplayers: "because!",
+		humbug: "helping",
+		chirpers: "good suggestions",
+		ash47: "helping alot, used code, examples",
+		balloontag: "bits of code"
+	},
 	url: "http://www.d2ware.net/",
 	license: "http://www.gnu.org/licenses/gpl.html"
 };
@@ -40,32 +40,32 @@ var TEAM_DIRE = dota.TEAM_DIRE;
 // Lucky Items Settings
 // ==========================================
 var settings = {
-	mapLoaded: false,			// did the map start?
-	pluginLoaded: false,		// did plugin initialize?
-	pluginHalted: false,		// did we tell our plugin to stop dispensing items?
-	timeElapsed: 0,				// keep track of passed in-game seconds
-	leadTime: ['5:00'],			// lead item drop : STATE_GAME_IN_PROGRESS
-	nextBase: ['5:00'],			// subsequent drops after the lead
-	shakeTime: 4,				// shake shake shake!
-	gameTime: null,				// keeps track of the game time
-	currentWave: 0,				// keeps track of the current item wave
-	waveLimit: 0,				// how many item waves will happen
-	playerList: [],				// which players will receive an item
-	playersBarredFromDrops: [], // playerID is in here, they will receive no items
-	dispenseTimeout: 0.6,		// how many seconds to wait before giving each player their items
-	itemDropFavorPercent: 15,   // percentage chance to get a favored item after a low one
-	gamePhase: 1,				// current match phase. 1 - Early Game; 2 - MidGame; 3 - Late Game
-	maxTries: 12,				// prevent an infinite search loop, break
-	maxTriesLoot: [				// we can't find our player an item, default to these
+	mapLoaded: false, // did the map start?
+	pluginLoaded: false, // did plugin initialize?
+	pluginHalted: false, // did we tell our plugin to stop dispensing items?
+	timeElapsed: 0, // keep track of passed in-game seconds
+	leadTime: ['5:00'], // lead item drop : STATE_GAME_IN_PROGRESS
+	nextBase: ['5:00'], // subsequent drops after the lead
+	shakeTime: 4, // shake shake shake!
+	gameTime: null, // keeps track of the game time
+	currentWave: 0, // keeps track of the current item wave
+	waveLimit: 0, // how many item waves will happen
+	playerList: [], // which players will receive an item
+	skipPlayers: [], // playerID is in here, they will receive no items
+	dispenseTimeout: 0.6, // how many seconds to wait before giving each player their items
+	itemDropFavorPercent: 25, // percentage chance to get a favored item after a low one
+	gamePhase: 1, // current match phase. 1 - Early Game; 2 - MidGame; 3 - Late Game
+	maxTries: 12, // prevent an infinite search loop, break
+	maxTriesLoot: [ // we can't find our player an item, default to these
 		'item_aegis',
 		'item_halloween_rapier'
 	],
-	reLootPercentage: 65,		// a percentage chance to random twice on specific items
-	reLootTable: [				// items to perform another random on.
+	reLootPercentage: 65, // a percentage chance to random twice on specific items
+	reLootTable: [ // items to perform another random on.
 		'item_cheese',
 		'item_winter_mushroom'
 	],
-	doNotConsiderDupes: [		// exceptions to keep generating loot.
+	doNotConsiderDupes: [ // exceptions to keep generating loot.
 		'item_rapier',
 		'item_aegis',
 		'item_cheese',
@@ -76,24 +76,30 @@ var settings = {
 	// This is the inventory queue to manage items when a player cannot be given more items.
 	// An integral part of the plugin, and cannot be disabled.
 	queue: {
-		interval: 0.8,						// Every X seconds: check our inventory queue, and take a hero snapshot
-		remindNItems: 2,					// Reminder trigger on the amount of items in a player's queue
-		reminderTimeout: 60,				// Every X seconds, remind our player they have items in their queue
-		reminderNotice: '%s in queue.'		// Message to display
+		interval: 0.8, // Every X seconds: check our inventory queue, and take a hero snapshot
+		remindNItems: 2, // Reminder trigger on the amount of items in a player's queue
+		reminderTimeout: 60, // Every X seconds, remind our player they have items in their queue
+		reminderNotice: '%s in queue.', // Message to display
+		maxNextLength: 4, // Amount of items to show in the player's queue on using -queue
 	},
 	// Plugin sound effects that occur when an item is randomed to a player or other trigger events.
 	sounds: {
-		enabled: true,			// Enabled / disabled
-		timeThreshold: 45,		// Below this time (in seconds) threshold, disable them
+		enabled: true, // Enabled / disabled
+		timeThreshold: 45, // Below this time (in seconds) threshold, disable them
 		addToInventory: ['ui/npe_objective_given.wav'],
-		itemEnchanted: ['ui/inventory/treasure_reveal.wav']
+		queueToInventory: ['ui/npe_objective_given.wav'],
+		itemEnchanted: ['ui/npe_objective_given.wav']
 	},
 	// Plugin chat drop notifications display
 	dropNotifications: {
-		lead: '\x02%s\x01',		// Lead item time (NOTE: Always enabled)
-		enabled: false,			// Enable / disable subsequent notifications
-		timeThreshold: 60,		// Below this time threshold (in seconds), disable them
-		subsequent: '%s',		// Subsequent item time
+		lead: '\x02%s\x01', // Lead item time (NOTE: Always enabled)
+		enabled: false, // Enable / disable subsequent notifications
+		timeThreshold: 60, // Below this time threshold (in seconds), disable them
+		subsequent: '%s', // Subsequent item time
+	},
+	money: {
+		GPS: 0,
+		GP10: 0
 	},
 	// Properties of the generated base item table
 	itemTable: {
@@ -102,18 +108,16 @@ var settings = {
 			disassemblable: false,
 			killable: false
 		},
-		instance: null,			// Here we store our lobby generated item table.
-		useWeights: true,		// Enable / disable the use of item weighing (RECOMMENDED: true)
-		powerWeight: 1,			// What power can we modify the weights up to
-		priceRangeMin: 1000,	// MIN price value to include in item table generation
-		priceRangeMax: 7000,	// MAX price value to include in item table generation
-		customMode: 1,			// Custom Modes: 1 - Default; 2 - Aegis & Rapier only
+		instance: null, // Here we store our lobby generated item table.
+		useWeights: false, // Enable / disable the use of item weighing
+		powerWeight: 1, // What power can we modify the weights up to
+		priceRangeMin: 1500, // MIN price value to include in item table generation
+		priceRangeMax: 10000, // MAX price value to include in item table generation
+		customMode: 1, // Custom Modes: 1 - Default; 2 - Aegis & Rapier only
 		// This section modifies the base item table when specified
 		counter: {},
 		// This section disables additional randoms for aura-based or team-wide items.
 		// will only dispense (randomly) the set number of items per team.
-		countLimitPerTeam: {},
-		maxEachLimit: 3,
 		limitPerTeam: {
 			// Aura-based / utility items
 			item_medallion_of_courage: 1,
@@ -133,14 +137,17 @@ var settings = {
 			item_desolator: 1
 			// Misc. item limits here
 		},
-		// Setting below removes possible item recipe upgrades from rolling again per player.
-		// For example, if a player rolled a dagon 3 the first time,
-		// all other possible dagon rolls are excluded, including a dagon 5.
+		countItemsPerTeam: {},
+		maxLimitPerItem: 3,
+		// Removes possible item side-grades from rolling again per player.
 		componentExclude: keyvalue.parseKVFile('item_component_exclusion_list.kv')
 	},
 	// These are the plugin addons. They are added onto the base and provide improved functionality.
 	// Plugin addons can be disabled, and the base plugin still functions normally without their intended benefits.
 	addons: {
+		nobuy: {
+			enabled: false
+		},
 		enchanter: {
 			enabled: false,
 			random: false,
@@ -198,17 +205,17 @@ var settings = {
 var enchanter = settings.addons.enchanter;
 var wardrobe = settings.addons.wardrobe;
 
-var timers = require('timers');						// Built-In Timers Library
-var sprintf = require('sprintf.js').vsprintf;		// Sprintf Library for dynamic strings
-var util = require('util.js');						// Load Utility Library
-var mapManager = require('mapManager.js');			// Load the Map Manager
-var playerManager = require('playerManager.js');	// Load exports related to player handling
-var unitManager = require('unitManager.js');		// Load exports related to hero/unit handling
-var itemManager = require('itemManager.js');		// Load exports related to item handling
-var enchants = require('enchantments.js');			// Load the item enchantments
-require('commands.js');								// Load the plugin commands
-require('dev.js');									// Load developer mode
-require('lobbyManager.js');							// Load lobby manager
+var timers = require('timers'); // Built-In Timers Library
+var sprintf = require('sprintf.js').vsprintf; // Sprintf Library for dynamic strings
+var util = require('util.js'); // Load Utility Library
+var mapManager = require('mapManager.js'); // Load the Map Manager
+var playerManager = require('playerManager.js'); // Load exports related to player handling
+var unitManager = require('unitManager.js'); // Load exports related to hero/unit handling
+var itemManager = require('itemManager.js'); // Load exports related to item handling
+var enchants = require('enchantments.js'); // Load the item enchantments
+require('commands.js'); // Load the plugin commands
+require('dev.js'); // Load developer mode
+require('lobbyManager.js'); // Load lobby manager
 
 // ==========================================
 // Item Dispenser
@@ -224,31 +231,27 @@ timers.setInterval(function() {
 		return;
 
 	// Game state invalid
-	if (util.getGameState() !== dota.STATE_GAME_IN_PROGRESS)
+	if (!util.getGameState(dota.STATE_GAME_IN_PROGRESS))
 		return;
 
 	// ==========================================
 	// Dispenser: Manages item drops
 	// ==========================================
-	if (!settings.pluginLoaded)
-	{
+	if (!settings.pluginLoaded) {
 		// Load the plugin
 		settings.pluginLoaded = true;
 
 		// Randomly select our initial drop time
 		var selected = settings.leadTime[util.getRandomNumber(settings.leadTime.length)];
-		if (DEBUG) server.print("First drop: " + selected);
 
 		// Convert the time into seconds
 		var converted = util.convertMinutesToSeconds(selected);
-		if (DEBUG) server.print("First drop converted: " + converted);
 
 		// To communicate with the game timer when the next drop will be exactly
 		settings.nextTime = converted;
 		settings.gameTime = game.rules.props.m_fGameTime + converted;
-		if (DEBUG) server.print("First drop game time: " + settings.gameTime);
 
-		// Tell the players when the next drop is
+		// Tell players when the first drop is
 		var cmdmsg = (enchanter.enabled ? ' use -li for enchant commands.' : '');
 		playerManager.printAll(settings.dropNotifications.lead + cmdmsg, [selected]);
 
@@ -260,7 +263,7 @@ timers.setInterval(function() {
 		if (settings.itemTable.useWeights && wardrobe.enabled) {
 			var incompatiblePlugins = wardrobe.disallowPlugins;
 			for (i = 0; i < incompatiblePlugins.length; ++i) {
-				if ( plugin.exists(incompatiblePlugins[i]) ) {
+				if (plugin.exists(incompatiblePlugins[i])) {
 					wardrobe.enabled = false;
 					break;
 				}
@@ -268,7 +271,7 @@ timers.setInterval(function() {
 			if (wardrobe.enabled && !wardrobe.loaded) {
 				var abilityPlugins = wardrobe.abilityPlugins;
 				for (i = 0; i < abilityPlugins.length; ++i) {
-					if ( plugin.exists(abilityPlugins[i]) ) {
+					if (plugin.exists(abilityPlugins[i])) {
 						wardrobe.checkAbilities = true;
 						break;
 					}
@@ -277,6 +280,51 @@ timers.setInterval(function() {
 				wardrobe.loaded = true;
 			}
 		}
+		// Apply custom gold accumulation
+	    if (settings.money.GP10 > 0) {
+	        timers.setInterval(function() {
+	            // Game state invalid
+	            if (!util.getGameState(dota.STATE_GAME_IN_PROGRESS))
+	                return;
+
+	            var players = playerManager.getConnectedPlayerIDs();
+	            for (var i = 0; i < players.length; ++i) {
+	                var playerID = players[i];
+	                var client = dota.findClientByPlayerID(playerID);
+	                if (client === null) continue;
+
+	                var gold = playerManager.getPlayerGold(playerID);
+	                if (!gold) continue;
+
+	                // Add extra gold
+	                gold.u += settings.money.GP10;
+
+	                playerManager.setPlayerGold(playerID, gold);
+	            }
+	        }, 10000);
+	    }
+	    if (settings.money.GPS > 0) {
+	        timers.setInterval(function() {
+	            // Game state invalid
+	            if (!util.getGameState(dota.STATE_GAME_IN_PROGRESS))
+	                return;
+
+	            var players = playerManager.getConnectedPlayerIDs();
+	            for (var i = 0; i < players.length; ++i) {
+	                var playerID = players[i];
+	                var client = dota.findClientByPlayerID(playerID);
+	                if (client === null) continue;
+
+	                var gold = playerManager.getPlayerGold(playerID);
+	                if (!gold) continue;
+
+	                // Add extra gold
+	                gold.u += settings.money.GPS;
+
+	                playerManager.setPlayerGold(playerID, gold);
+	            }
+	        }, 1000);
+	    }
 	}
 	if (settings.pluginLoaded && game.rules.props.m_fGameTime >= settings.gameTime && !settings.pluginHalted) {
 
@@ -298,14 +346,14 @@ timers.setInterval(function() {
 		settings.gameTime += increment;
 
 		if (settings.dropNotifications.enabled) {
-			var shakeTime = util.convertSecondsToMinutes(settings.nextTime + util.getRandomNumber( util.flipNumber( settings.shakeTime ) ) );
+			var shakeTime = util.convertSecondsToMinutes(settings.nextTime + util.getRandomNumber(util.flipNumber(settings.shakeTime)));
 			playerManager.printAll(settings.dropNotifications.subsequent, [shakeTime]);
 		}
 
 		var players = playerManager.getConnectedPlayerIDs();
 		for (var i = 0; i < players.length; ++i) {
 			// Skip players exempt from items
-			if (settings.playersBarredFromDrops.indexOf(players[i]) > -1)
+			if (settings.skipPlayers.indexOf(players[i]) > -1)
 				continue;
 
 			settings.playerList.push(players[i]);
@@ -320,13 +368,9 @@ timers.setInterval(function() {
 	}
 }, 100);
 
-// ==========================================
-// Begin Plugin Functions
-// ==========================================
 function startDispensing() {
 	var timer = timers.setInterval(function() {
-		if (settings.playerList.length > 0)
-		{
+		if (settings.playerList.length > 0) {
 			// Randomize the playerList
 			util.shuffle(settings.playerList);
 			// Pop a playerID
@@ -336,8 +380,7 @@ function startDispensing() {
 			// Give the player their item
 			playerManager.giveItem(playerID, item);
 			// Here we perform our sub-par items re-loot chance
-			if (settings.reLootTable.indexOf(item[0]) > -1 && util.getRandomNumber(100) < settings.reLootPercentage)
-			{
+			if (settings.reLootTable.indexOf(item[0]) > -1 && util.getRandomNumber(100) < settings.reLootPercentage) {
 				// Get unique item name
 				item = itemManager.getUniqueItemName(playerID);
 				// Disable the sounds
@@ -357,24 +400,10 @@ function startDispensing() {
 	}, settings.dispenseTimeout * 1000);
 }
 
-game.hook("Dota_OnUnitThink", onUnitThink);
-function onUnitThink(unit) {
-	if (enchanter.enabled) {
-		dota.setUnitState(enchanter.onHitEnchantEntity, dota.UNIT_STATE_INVISIBLE, true);
-		dota.setUnitState(enchanter.onHitEnchantEntity, dota.UNIT_STATE_INVULNERABLE, true);
-		dota.setUnitState(enchanter.onHitEnchantEntity, dota.UNIT_STATE_CANT_ACT, true);
-		dota.setUnitState(enchanter.onHitEnchantEntity, dota.UNIT_STATE_BANISHED, true);
-
-		dota.setUnitState(enchanter.onEquipEnchantEntity, dota.UNIT_STATE_INVISIBLE, true);
-		dota.setUnitState(enchanter.onEquipEnchantEntity, dota.UNIT_STATE_INVULNERABLE, true);
-		dota.setUnitState(enchanter.onEquipEnchantEntity, dota.UNIT_STATE_CANT_ACT, true);
-		dota.setUnitState(enchanter.onEquipEnchantEntity, dota.UNIT_STATE_BANISHED, true);
-	}
-}
-
 // ==========================================
 // Addon: Wardrobe
 // ==========================================
+
 function tailorHeroes() {
 	var baseTable = settings.itemTable.instance;
 	var tmpTable = util.clone(itemManager.baseTable);
@@ -399,11 +428,11 @@ function tailorHeroes() {
 
 			var heroExists = (typeof hFile.Heroes[heroName] !== "undefined" ? true : false);
 
-			if ( !heroExists )
+			if (!heroExists)
 				continue;
 
 			// Remove the chance to random banned melee items on ranged heroes
-			if ( !isMelee ) {
+			if (!isMelee) {
 				for (var j = 0; j < wardrobe.rules.rangedBanned.length; ++j) {
 					var banName = wardrobe.rules.rangedBanned[j];
 					for (k = 0; k < playerProps[playerID].lootTable.length; k++) {
@@ -416,7 +445,7 @@ function tailorHeroes() {
 
 			// Primary Hero Attribute Modification
 			var fileFieldPrimaryExists = (typeof hFile.Heroes[heroName].attributePrimary !== "undefined" ? true : false);
-			if ( fileFieldPrimaryExists ) {
+			if (fileFieldPrimaryExists) {
 				var attr = hFile.Heroes[heroName].attributePrimary;
 				for (var j = 0; j < playerProps[playerID].lootTable.length; j++) {
 					var entry = playerProps[playerID].lootTable[j];
@@ -437,8 +466,8 @@ function tailorHeroes() {
 			}
 			if (!wardrobe.checkAbilities) {
 				// Weight modifications based on hero.
-				if ( heroExists ) {
-					if ( typeof hFile.Heroes[heroName].itemBuild !== "undefined" ) {
+				if (heroExists) {
+					if (typeof hFile.Heroes[heroName].itemBuild !== "undefined") {
 						for (var j = 0; j < hFile.Heroes[heroName].itemBuild.length; j++) {
 							var prop = hFile.Heroes[heroName].itemBuild[j];
 							for (var k = 0; k < playerProps[playerID].lootTable.length; k++) {
@@ -453,7 +482,7 @@ function tailorHeroes() {
 							}
 						}
 					}
-					if ( typeof hFile.Heroes[heroName].bannedBuild !== "undefined" ) {
+					if (typeof hFile.Heroes[heroName].bannedBuild !== "undefined") {
 						for (var j = 0; j < hFile.Heroes[heroName].bannedBuild.length; j++) {
 							for (var k = 0; k < playerProps[playerID].lootTable.length; k++) {
 								var entry = playerProps[playerID].lootTable[k];
@@ -469,17 +498,15 @@ function tailorHeroes() {
 
 						// Scepter changes
 						if (entry[0] == "item_ultimate_scepter") {
-							if ( hFile.Heroes[heroName].ultimateUpgrade === 0 ) {
+							if (hFile.Heroes[heroName].ultimateUpgrade === 0) {
 								entry[1] = 0;
-							}
-							else if ( hFile.Heroes[heroName].ultimateUpgrade === 1 ) {
+							} else if (hFile.Heroes[heroName].ultimateUpgrade === 1) {
 								entry[1] = wardrobe.rules.scepterUpgrade;
 							}
 						}
 					}
 				}
-			}
-			else {
+			} else {
 				var abilities = [];
 				for (var j = 0; j < 15; j++) {
 					if (hero.netprops.m_hAbilities[j] !== null) {
@@ -491,11 +518,10 @@ function tailorHeroes() {
 
 				// Analyze the abilities
 				for (var k = 0; k < abilities.length; ++k) {
-					if ( sFile.Abilities.scepter.indexOf(abilities[k]) > -1) {
+					if (sFile.Abilities.scepter.indexOf(abilities[k]) > -1) {
 						scepterAbility = true;
 						break;
-					}
-					else
+					} else
 						continue;
 				}
 

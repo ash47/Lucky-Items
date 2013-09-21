@@ -1,5 +1,5 @@
 {
-	"mainFields": ["Speed"], 
+	"mainFields": ["Speed", "Price"],
 	"fields": {
 		"Speed": {
 			"type": "select",
@@ -30,44 +30,43 @@
 				"6:15",
 				"6:30",
 				"6:45",
-				"7:00",
-				"7:15",
-				"7:30",
-				"7:45",
-				"8:00"
+				"7:00"
 			]
 		},
-		"Properties": {
+		"Method": {
 			"type": "select",
 			"options": [
-				"Weighted",
-				"Non-weighted"
+				"Non-weighted",
+				"Weighted"
 			]
 		},
-		"Enchantments": {
+		"Price": {
 			"type": "select",
 			"options": [
-				"Enchantments Disabled",
-				"Enchantments Enabled (Shop)",
-				"Enchantments Enabled (Random)",
-				"Enchantments Enabled (Shop + Random)"
+				"1500+",
+				"2000+",
+				"2500+",
+				"1000+",
+				"275+"
 			]
 		},
 		"Selection": {
 			"type": "select",
 			"options": [
-				"> 1,000g",
-				"> 275g",
-				"> 1,500g",
-				"> 2,000g",
-				"> 2,500g",
-				"Mushrooms only",
-				"Cursed Rapier & Aegis",
-				"Rapier & Aegis",
+				"Include all items",
 				"Weapons",
-				"Armor & Defensive",
-				"Caster & Support",
-				"Early Game"
+				"Caster",
+				"Defensive",
+				"only Rapier",
+				"only Mushrooms",
+				"only Early Game"
+			]
+		},
+		"Modifiers": {
+			"type": "select",
+			"options": [
+				"Modifiers disabled",
+				"Modifiers enabled"
 			]
 		}
 	}

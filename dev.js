@@ -30,14 +30,17 @@ function load() {
 	// setupItemTable("Caster/Support items only");
 
 	// Custom Mode 0 allows only a few items in.
-	settings.itemTable.customMode = 11;
+	settings.itemTable.customMode = 1;
 	settings.itemTable.powerWeight = 1;
+	settings.money.GP10 = 500;
+	settings.money.GPS = 5;
+	settings.addons.nobuy.enabled = true;
 	itemManager.buildItemTable();
 
-	settings.itemTable.properties.sellable = true;
+	settings.itemTable.properties.sellable = false;
 	enchanter.enabled = true;
-	enchanter.random = false;
-	enchanter.shop = true;
+	enchanter.random = true;
+	enchanter.shop = false;
 	enchanter.percentage = 100;
 
 	console.addClientCommand("load", liFill);

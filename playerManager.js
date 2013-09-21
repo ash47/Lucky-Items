@@ -5,6 +5,7 @@ for (var i = 0; i < playerProps.length; ++i)
 	playerProps[i] = {
 		queue: [],					// Handles extra equipment in storage space
 		queueNotified: false,		// Reminder of queued items
+		queuePaused: false,			// A boolean controlled by the player to stop/start the queue
 		snapHeroEquip: [],			// Last snapshot of a player's equipment
 		equipmentHandouts: [],		// Logs all item names given to this player
 		equipmentEntities: [],		// Logs all item entity indexes changed by the plugin
@@ -13,8 +14,8 @@ for (var i = 0; i < playerProps.length; ++i)
 		buildLootTable: true,		// Boolean to tell plugin to build a loot table
 		enchantTimeouts: {},
 		lastAttacker: null,
-		onEquipModifiers: [],
-		lastEquipment: []
+		lastEquipment: [],
+		upgradeHandouts: []			// Logs all the item upgrades randomed to this player
 	};
 }
 
@@ -145,12 +146,15 @@ function printToPlayer(playerID, string, args) {
 // ==========================================
 timers.setInterval(function() {
 	// Has the map & plugin initialized?
-	if (!settings.mapLoaded || !settings.pluginLoaded) return;
+	if (!settings.mapLoaded || !settings.pluginLoaded)
+		return;
 	// Has the game begun?
-	if (!util.getGameState(dota.STATE_GAME_IN_PROGRESS)) return;
+	if (!util.getGameState(dota.STATE_GAME_IN_PROGRESS))
+		return;
 	// Loop through the players
 	var playerIDs = getConnectedPlayerIDs();
 	for (var i = 0; i < playerIDs.length; ++i) {
+		// Looped playerID
 		var playerID = playerIDs[i];
 		// Do we have a hero?
 		var hero = playerManager.grabHero(playerID);
@@ -158,13 +162,15 @@ timers.setInterval(function() {
 		// Take a snapshot of a player's equipment, in-case they disconnect
 		playerProps[playerID].snapHeroEquip = unitManager.pullHeroEquipment(hero, 1);
 		// Queue operations
-		if (playerProps[playerID].queue.length > 0) {
+		if (playerProps[playerID].queue.length > 0 && !playerProps[playerID].queuePaused) {
 			// Do we have space in inventory or stash?
 			if (unitManager.isInventoryAvailable(hero) || unitManager.isBankAvailable(hero)) {
 				// Shift the beginning item in our player queue
 				var itemToGive = playerProps[playerID].queue.shift();
 				// Give it to our player
+				settings.sounds.enabled = false;
 				giveItem(playerID, itemToGive);
+				settings.sounds.enabled = true;
 			}
 			// If we have more items in the queue, send a reminder
 			if (playerProps[playerID].queue.length >= settings.queue.remindNItems && !playerProps[playerID].queueNotified) {
@@ -322,6 +328,8 @@ function purchase(playerID, cost) {
 }
 
 // Exports
+exports.setPlayerGold = setPlayerGold;
+exports.getPlayerGold = getPlayerGold;
 exports.purchase = purchase;
 exports.giveItem = giveItem;
 exports.getTeamIDFromPlayerID = getTeamIDFromPlayerID;

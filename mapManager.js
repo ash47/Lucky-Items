@@ -2,10 +2,43 @@
 // Hooks
 // ==========================================
 game.hook("OnMapStart", onMapStart);
+game.hook("Dota_OnBuyItem", onBuyItem);
 
 // ==========================================
 // Functions
 // ==========================================
+function onBuyItem(unit, itemcls, playerID, unknown) {
+	if (settings.addons.nobuy.enabled) {
+		var iList = [
+			"item_courier",
+			"item_flying_courier",
+			"item_ward_observer",
+			"item_ward_sentry",
+			"item_dust",
+			"item_smoke_of_deceit",
+			"item_tpscroll",
+			"item_gem",
+			"item_tango",
+			"item_bottle",
+			"item_magic_stick",
+			"item_magic_wand",
+			"item_recipe_magic_wand",
+			"item_branches",
+			"item_flask",
+			"item_clarity",
+			"item_stout_shield",
+			"item_quelling_blade"
+		];
+
+		// Enable all item purchases in the white list.
+		if (iList.indexOf(itemcls) > -1)
+			return;
+
+		// Disable everything else.
+		return false;
+	}
+}
+
 function onMapStart() {
 	settings.mapLoaded = true;
 

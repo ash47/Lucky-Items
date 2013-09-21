@@ -100,10 +100,10 @@ var baseItemTable = [
   // [0            1,           2,     3,         4,        5,         ]
   // ["Classname", weight(0-∞), price, gamePhase, shopMask, attrMask], // Weapon Name (price)
   //
-  ['item_halloween_rapier',       15,    0, 0, SHOP_WEAPON, PRIM_NONE], // Halloween Rapier (0g)
-  ['item_winter_mushroom',         5,    0, 0, SHOP_CASTER, PRIM_ALL], // Winter Mushroom (0g)
-  ['item_aegis',                   5,    0, 0, SHOP_ALL, PRIM_ALL], // Aegis of the Immortal (0g)
-  ['item_cheese',                  5,    0, 0, SHOP_ARMOR, PRIM_ALL], // Cheese (0g)
+  ['item_halloween_rapier',       21, 6200, 3, SHOP_WEAPON, PRIM_NONE], // Halloween Rapier (0g)
+  ['item_winter_mushroom',         5,    0, 1, SHOP_CASTER, PRIM_ALL], // Winter Mushroom (0g)
+  ['item_aegis',                   5,    0, 1, SHOP_ALL, PRIM_ALL], // Aegis of the Immortal (0g)
+  ['item_cheese',                  5,    0, 1, SHOP_ARMOR, PRIM_ALL], // Cheese (0g)
   //
   ['item_orb_of_venom',          300,  275, 1, 0, PRIM_NONE], // Orb of Venom (275g)
   ['item_null_talisman',         291,  470, 1, 4, PRIM_INT], // Null Talisman (470g)
@@ -124,11 +124,11 @@ var baseItemTable = [
   ['item_blade_of_alacrity',     270, 1000, 1, 2, PRIM_AGI], // Blade of Alacrity (1,000g)
   ['item_staff_of_wizardry',     270, 1000, 1, 4, PRIM_INT], // Staff of Wizardry (1,000g)
   ['item_energy_booster',        270, 1000, 1, 4, PRIM_NONE], // Energy Booster (1,000g)
-  ['item_medallion_of_courage',  267, 1075, 1, SHOP_WEAPON_ARMOR,   PRIM_NONE], // Medallion of Courage (1,075g)
+  ['item_medallion_of_courage',  267, 1075, 1, SHOP_ARMOR,          PRIM_NONE], // Medallion of Courage (1,075g)
   ['item_vitality_booster',      266, 1100, 1, SHOP_ARMOR,          PRIM_NONE], // Vitality Booster (1,100g)
   ['item_point_booster',         262, 1200, 1, SHOP_ARMOR,          PRIM_NONE], // Point Booster (1,200g)
   ['item_broadsword',            262, 1200, 1, SHOP_WEAPON,         PRIM_NONE], // Broadsword (1,200g)
-  ['item_phase_boots',           256, 1350, 1, SHOP_WEAPON,         PRIM_NONE], // Phase Boots (1,350g)
+  ['item_phase_boots',           256, 1350, 1, SHOP_NONE,         PRIM_NONE], // Phase Boots (1,350g)
   ['item_platemail',             254, 1400, 1, SHOP_ARMOR,          PRIM_NONE], // Platemail (1,400g)
   ['item_claymore',              254, 1400, 1, SHOP_WEAPON,         PRIM_NONE], // Claymore (1,400g)
   ['item_power_treads',          254, 1400, 1, SHOP_ALL,            PRIM_ALL], // Power Treads (1,400g)
@@ -141,10 +141,10 @@ var baseItemTable = [
   ['item_pers',                  240, 1750, 1, SHOP_CASTER_ARMOR,   PRIM_NONE], // Perseverance (1,750g)
   ['item_ancient_janggo',        239, 1775, 1, SHOP_CASTER_ARMOR,   PRIM_NONE], // Drums of Endurance (1,775g)
   ['item_talisman_of_evasion',   119, 1800, 2, SHOP_ARMOR,          PRIM_NONE], // Talisman of Evasion (1,800g)
-  ['item_helm_of_the_dominator', 118, 1850, 2, SHOP_WEAPON,         PRIM_NONE], // Helm of the Dominator (1,850g)
+  ['item_helm_of_the_dominator', 118, 1850, 2, SHOP_ARMOR,          PRIM_NONE], // Helm of the Dominator (1,850g)
   ['item_hand_of_midas',         234, 1900, 1, SHOP_NONE,           PRIM_NONE], // Hand of Midas (1,900g)
-  ['item_mask_of_madness',       117, 1900, 2, SHOP_WEAPON,         PRIM_NONE], // Mask of Madness (1,900g)
-  ['item_vladmir',               114, 2050, 2, SHOP_WEAPON_ARMOR,   PRIM_NONE], // Vladmir's Offering (2,050g)
+  ['item_mask_of_madness',       117, 1900, 2, SHOP_NONE,           PRIM_NONE], // Mask of Madness (1,900g)
+  ['item_vladmir',               114, 2050, 2, SHOP_ARMOR,          PRIM_NONE], // Vladmir's Offering (2,050g)
   ['item_yasha',                 114, 2050, 2, SHOP_WEAPON,         PRIM_AGI], // Yasha (2,050g)
   ['item_sange',                 114, 2050, 2, SHOP_WEAPON,         PRIM_STR], // Sange (2,050g)
   ['item_ultimate_orb',          113, 2100, 2, SHOP_CASTER,         PRIM_ALL], // Ultimate Orb (2,100g)
@@ -157,7 +157,7 @@ var baseItemTable = [
   ['item_force_staff',           220, 2250, 1, SHOP_CASTER,         PRIM_INT], // Force Staff (2,250g)
   ['item_mekansm',               109, 2306, 2, SHOP_CASTER_ARMOR,   PRIM_NONE], // Mekansm (2,306g)
   ['item_demon_edge',            107, 2400, 2, SHOP_WEAPON,         PRIM_NONE], // Demon Edge (2,400g)
-  ['item_travel_boots',           71, 2450, 3, SHOP_ALL,            PRIM_NONE], // Boots of Travel (2,450g)
+  ['item_travel_boots',           71, 2450, 3, SHOP_CASTER_ARMOR,   PRIM_NONE], // Boots of Travel (2,450g)
   ['item_armlet',                103, 2600, 2, SHOP_ARMOR,          PRIM_STR], // Armlet of Mordiggan (2,600g)
   ['item_veil_of_discord',       102, 2650, 2, SHOP_CASTER,         PRIM_INT], // Veil of Discord (2,650g)
   ['item_mystic_staff',          101, 2700, 2, SHOP_CASTER,         PRIM_INT], // Mystic Staff (2,700g)
@@ -193,10 +193,10 @@ var baseItemTable = [
   ['item_necronomicon_3',         34, 5200, 3, SHOP_CASTER_ARMOR,   PRIM_STR_INT], // Necronomicon 3 (5,200g)
   ['item_dagon_3',                34, 5230, 3, SHOP_CASTER,         PRIM_INT], // Dagon 3 (5,230g)
   ['item_refresher',              34, 5300, 3, SHOP_CASTER,         PRIM_INT], // Refresher Orb (5,300g)
-  ['item_assault',                34, 5350, 3, SHOP_WEAPON_ARMOR,   PRIM_NONE], // Assault Cuirass (5,350g)
+  ['item_assault',                34, 5350, 3, SHOP_ARMOR,          PRIM_NONE], // Assault Cuirass (5,350g)
   ['item_mjollnir',               32, 5400, 3, SHOP_WEAPON,         PRIM_NONE], // Mjollnir (5,400g)
   ['item_monkey_king_bar',        31, 5400, 3, SHOP_WEAPON,         PRIM_NONE], // Monkey King Bar (5,400g)
-  ['item_heart',                  31, 5500, 3, SHOP_ALL,            PRIM_STR], // Heart of Terrasque (5,500g)
+  ['item_heart',                  31, 5500, 3, SHOP_ARMOR,          PRIM_STR], // Heart of Terrasque (5,500g)
   ['item_greater_crit',           30, 5550, 3, SHOP_WEAPON,         PRIM_NONE], // Daedalus (5,550g)
   ['item_skadi',                  29, 5675, 3, SHOP_WEAPON_ARMOR,   PRIM_ALL], // Eye of Skadi (5,675g)
   ['item_sheepstick',             28, 5675, 3, SHOP_CASTER_ARMOR,   PRIM_INT], // Scythe of Vyse (5,675g)
@@ -219,183 +219,98 @@ function getEntryByClassname(clsname) {
 
 function enchantLoot(entity, item, playerID) {
 	// Switch item checks and see if this item can be enchanted
-	var isEnchantable = false;
-	switch(true)
-	{
-		// Weapons that do/look like damage
-		case (item[0] === "item_ogre_axe"):
-		case (item[0] === "item_blade_of_alacrity"):
-		case (item[0] === "item_broadsword"):
-		case (item[0] === "item_claymore"):
-		case (item[0] === "item_javelin"):
-		case (item[0] === "item_mithril_hammer"):
-		case (item[0] === "item_yasha"):
-		case (item[0] === "item_sange"):
-		case (item[0] === "item_lesser_crit"):
-		case (item[0] === "item_demon_edge"):
-		case (item[0] === "item_maelstrom"):
-		case (item[0] === "item_basher"):
-		case (item[0] === "item_invis_sword"):
-		case (item[0] === "item_diffusal_blade"):
-		case (item[0] === "item_relic"):
-		case (item[0] === "item_heavens_halberd"):
-		case (item[0] === "item_black_king_bar"):
-		case (item[0] === "item_desolator"):
-		case (item[0] === "item_sange_and_yasha"):
-		case (item[0] === "item_diffusal_blade_2"):
-		case (item[0] === "item_bfury"):
-		case (item[0] === "item_manta"):
-		case (item[0] === "item_mjollnir"):
-		case (item[0] === "item_monkey_king_bar"):
-		case (item[0] === "item_greater_crit"):
-		case (item[0] === "item_skadi"):
-		case (item[0] === "item_rapier"):
-		case (item[0] === "item_abyssal_blade"):
-		case (item[0] === "item_butterfly"):
-		case (item[0] === "item_reaver"):
-		case (item[0] === "item_radiance"):
-			isEnchantable = true;
-			var possibleEnchants = enchants.enchantMap.onHit;
-			var type = "onHit";
-			break;
-		// Equipped Items (constant status effects)
-		default:
-		case (item[0] === "item_assault"):
-		case (item[0] === "item_hood_of_defiance"):
-		case (item[0] === "item_pipe"):
-		case (item[0] === "item_bloodstone"):
-		case (item[0] === "item_blade_mail"):
-		case (item[0] === "item_shivas_guard"):
-		case (item[0] === "item_heart"):
-		case (item[0] === "item_sphere"):
-		case (item[0] === "item_bloodstone"):
-		case (item[0] === "item_soul_booster"):
-		case (item[0] === "item_veil_of_discord"):
-		case (item[0] === "item_mask_of_madness"):
-		case (item[0] === "item_ancient_janggo"):
-		case (item[0] === "item_arcane_boots"):
-		case (item[0] === "item_tranquil_boots"):
-		case (item[0] === "item_power_treads"):
-		case (item[0] === "item_phase_boots"):
-		case (item[0] === "item_travel_boots"):
-			isEnchantable = true;
-			var possibleEnchants = enchants.enchantMap.onEquip;
-			var type = "onEquip";
-			break;
-		// Add entries below to not enchant
-		case (item[0] === "item_aegis"):
-		case (item[0] === "item_cheese"):
-		case (item[0] === "item_winter_mushroom"):
-			break;
-	}
-	if (isEnchantable)
-	{
+	var isEnchantable = true;
+	if (isEnchantable) {
 		// Chance of additional item properties is lowered based on the time setting
-		var isEnchanted = true;
-		if (isEnchanted)
-		{
-			entity.enchanted = true;
+        var isEnchanted = true;
+        if (isEnchanted) {
+            // Combine enchantment categories
+            var arr1 = enchants.enchantMap.onHit;
+            var arr2 = enchants.enchantMap.onEquip;
+            var combined = arr2.concat(arr1);
 
-			// Play a sound indicating this item was enchanted
-			var client = dota.findClientByPlayerID(playerID);
-			if (client !== null) {
-				var sounds = settings.sounds.itemEnchanted;
-				var sound = util.randomElement(sounds);
-				dota.sendAudio(client, false, sound);
-			}
+            // Shuffle enchant map
+            util.shuffle(combined);
 
-			// Shuffle enchant map
-			util.shuffle(possibleEnchants);
-
-      var hero = playerManager.grabHero(playerID);
-      var tmp = [];
-      if (hero !== null) {
-        var heroLevel = hero.netprops.m_iCurrentLevel;
-        if (DEBUG) server.print("Hero is currently level: " + heroLevel);
-        for (var i = 0; i < possibleEnchants.length; ++i) {
-          var enchant = possibleEnchants[i];
-          if (DEBUG) server.print("Enchantment minimum level: " + enchant.minlevel);
-          if (enchant.minimumHeroLevel > heroLevel) {}
-          else {
-            tmp.push(enchant);
-            if (DEBUG) server.print("Enchant pushed, acceptable: " + enchant.name);
-          }
-        }
-        possibleEnchants = tmp;
-      }
+            var tmp = [], possibleEnchants = [];
+            var upgradeHandouts = playerManager.getProp(playerID, 'upgradeHandouts');
+            // Grab hero for minimum level checking
+            var hero = playerManager.grabHero(playerID);
+            if (hero !== null) {
+                var heroLevel = hero.netprops.m_iCurrentLevel;
+                for (var i = 0; i < combined.length; ++i) {
+                    var enchant = combined[i];
+                    if (heroLevel >= enchant.minimumHeroLevel && upgradeHandouts.indexOf(enchant.name) === -1)
+                        tmp.push(enchant);
+                }
+                if (tmp.length === 0)
+                    possibleEnchants = combined;
+                else
+                    possibleEnchants = tmp;
+            }
+            if (possibleEnchants.length === 0)
+                possibleEnchants = combined;
 
 			// See how many we have total
 			// var total = possibleEnchants.length;
 			var rand = function(min, max) {
 			    return Math.random() * (max - min) + min;
 			};
-			 
+
 			var getRandomItem = function(list, weight) {
 			    var total_weight = weight.reduce(function (prev, cur, i, arr) {
 			        return prev + cur;
 			    });
-			     
+
 			    var random_num = rand(0, total_weight);
 			    var weight_sum = 0;
-			     
+
 			    for (var i = 0; i < list.length; i++) {
 			        weight_sum += weight[i];
 			        weight_sum = +weight_sum.toFixed(2);
-			         
+
 			        if (random_num <= weight_sum) {
 			            return list[i];
 			        }
 			    }
 			};
-			 
+
 			var list = [1, 2, 3];
-			var weight = [0.5, 0.3, 0.1];
+			var weight = [0.65, 0.25, 0.10];
 			var random_item = getRandomItem(list, weight);
 
 			// Pick some enchantments for our item
-			// util.getRandomNumberExcludeZero(2)
-			var selected = possibleEnchants.slice( 0, random_item );
+			var selected = possibleEnchants.slice(0, random_item);
 
-			// if (DEBUG) server.print(selected.length);
+            function createProps(ent, name) {
+                if(!ent.enchants)
+                    ent.enchants = {};
 
-			if (selected.length > 0)
-			{
+                if(!ent.enchants[name])
+                    ent.enchants[name] = {};
+
+                if(!ent.enchants[name].props)
+                    ent.enchants[name].props = {level: 0};
+
+                return ent;
+            }
+
+			if (selected.length > 0) {
 				var entityName = entity.getClassname();
-
-				// if (DEBUG) server.print("Enchanting Item: " + entityName);
-
 				var named = getStringName(entityName);
 
-				if (selected.length === 1)
-				{
-					var enchant = selected[0];
-
-					// if (DEBUG) server.print("Enchant is: " + enchant.name);
-
+				if (selected.length === 1) {
+					var enchant = selected.shift();
 					var name = util.capitaliseFirstLetter(enchant.name);
-					var level = util.getRandomNumberExcludeZero(4);
 
-          function createProps(ent, name) {
-            if(!ent.enchants[name])
-              ent.enchants[name] = {};
+                    entity = createProps(entity, enchant.name);
 
-            if(!ent.enchants[name].props)
-              ent.enchants[name].props = {level: 0};
+					enchant.setup(entity, enchant.name, 1);
 
-            return ent;
-          }
+					playerManager.print(playerID, "%s has %s", [named, name]);
 
-          if (!entity.enchants) 
-            entity.enchants = {};
-
-          if (!entity.enchants[enchant.name])
-            entity = createProps(entity, enchant.name);
-
-					enchant.setup(entity, enchant.name, level);
-
-					// if (DEBUG) server.print("Entity has enchant? " + entity[enchant.name]);
-
-					playerManager.print(playerID, "%s enchanted %s [level %s] %s", [named, name, level, type]);
+                    if (upgradeHandouts.indexOf(enchant.name) === -1)
+                        upgradeHandouts.push(enchant.name);
 				}
 				else {
 					var enchantNames = [];
@@ -403,19 +318,28 @@ function enchantLoot(entity, item, playerID) {
 					for (var i = 0; i < selected.length; ++i) {
 						var enchant = selected[i];
 						var name = util.capitaliseFirstLetter(enchant.name);
-						var level = util.getRandomNumberExcludeZero(4);
+                        // Add upgrades to player upgrade array
+                        if (upgradeHandouts.indexOf(enchant.name) === -1)
+                            upgradeHandouts.push(enchant.name);
+
 						enchantNames.push(name);
-						levels.push(level);
-            if (!entity.enchants) 
-              entity.enchants = {};
 
-            if (!entity.enchants[enchant.name])
-              entity = createProps(entity, enchant.name);
+                        entity = createProps(entity, enchant.name);
 
-						enchant.setup(entity, enchant.name, level);
+						enchant.setup(entity, enchant.name, 1);
 					}
-					playerManager.print(playerID, "%s enchanted %s [levels %s] %s", [named, enchantNames.join(", "), levels.join(", "), type]);
+					playerManager.print(playerID, "%s has %s", [named, enchantNames.join(", ")]);
 				}
+                playerManager.setProp(playerID, 'upgradeHandouts', upgradeHandouts);
+
+                // Play a sound indicating this item was upgraded
+                if (settings.sounds.enabled) {
+                    var client = dota.findClientByPlayerID(playerID);
+                    if (client !== null) {
+                        var sound = util.randomElement(settings.sounds.itemEnchanted);
+                        dota.sendAudio(client, false, sound);
+                    }
+                }
 			}
 		}
 	}
@@ -438,7 +362,7 @@ function changeItemProperties(entity, entry, playerID) {
 	entity.netprops.m_bDroppable = true;
 
 	// Play a normal add sound if our item is not enchanted
-	if (settings.sounds.enabled && !entity.enchanted) {
+	if (settings.sounds.enabled && !entity.enchants) {
 		var sounds = settings.sounds.addToInventory;
 		var sound = util.randomElement(sounds);
 		var client = dota.findClientByPlayerID(playerID);
@@ -460,22 +384,15 @@ function buildItemTable() {
 	var tmp = util.clone(baseItemTable);
 	// Always included in table
 	for (var i = 0; i < tmp.length; ++i) {
-		if (tmp[i][2] === 0) {
+		if (tmp[i][LOOT_IDX_PRICE] === 0) {
 			mainItemTable.push(tmp[i]);
 		}
 	}
 	// Apply additional modifications to tmp table
 	switch(settings.itemTable.customMode)
 	{
-		case 0:
-			for (i = 0; i < tmp.length; ++i) {
-				var itemList = ["item_greevil_whistle_toggle", "item_greevil_whistle"];
-				if ( itemList.indexOf(tmp[i][0]) > -1 ) {
-					mainItemTable.push(tmp[i]);
-				}
-			}
-			break;
 		default:
+        // Price exemption "All"
 		case 1:
 			for (var i = 0; i < tmp.length; ++i) {
 				if ( tmp[i][2] > settings.itemTable.priceRangeMin && tmp[i][2] < settings.itemTable.priceRangeMax ) {
@@ -483,90 +400,60 @@ function buildItemTable() {
 				}
 			}
 			break;
-		case 2: // Aegis & Rapier
-      mainItemTable.length = 0;
-      for (var i = 0; i < tmp.length; ++i) {
-        if (tmp[i][LOOT_IDX_CLS] == "item_rapier" || tmp[i][LOOT_IDX_CLS] == "item_aegis") {
-          mainItemTable.push(tmp[i]);
-        }
-      }
+        // Aegis & Rapier
+		case 2:
+            mainItemTable.length = 0;
+            var whiteList = ["item_rapier", "item_aegis", "item_halloween_rapier"];
+            for (var i = 0; i < tmp.length; ++i) {
+                // Add whitelist items to our new table.
+                if (whiteList.indexOf(tmp[i][LOOT_IDX_CLS]) > -1)
+                    mainItemTable.push(tmp[i]);
+                // Increase aegis weight to balance.
+                if (tmp[i][LOOT_IDX_CLS] == "item_aegis")
+                    tmp[i][LOOT_IDX_WEIGHT] = 8;
+            }
 			break;
-		case 3: // Caster/Support items only
-			for (var i = 0; i < tmp.length; ++i) {
-				if ( util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_CASTER) && tmp[i][LOOT_IDX_PRICE] > 1000) {
+        // Caster/Support items only
+		case 3:
+			for (var i = 0; i < tmp.length; ++i)
+				if (util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_CASTER)
+                    && (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax) )
 					mainItemTable.push(tmp[i]);
-				}
-			}
 			break;
-		case 4: // Damage items only
-			for (var i = 0; i < tmp.length; ++i) {
-				if ( util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_WEAPON) && tmp[i][LOOT_IDX_PRICE] > 1000) {
+        // Weapons only
+		case 4:
+			for (var i = 0; i < tmp.length; ++i)
+				if (util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_WEAPON)
+                    && (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax))
 					mainItemTable.push(tmp[i]);
-				}
-			}
 			break;
-		case 5: // Armor/Defensive items only
-			for (var i = 0; i < tmp.length; ++i) {
-				if (util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_ARMOR) && tmp[i][LOOT_IDX_PRICE] > 1000) {
+        // Armor/Defensive items only
+		case 5:
+			for (var i = 0; i < tmp.length; ++i)
+				if (util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_ARMOR)
+                    && (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax))
 					mainItemTable.push(tmp[i]);
-				}
-			}
 			break;
-		case 6: // Early Game items only
-			for (var i = 0; i < tmp.length; ++i) {
-				if ( tmp[i][LOOT_IDX_PHASE] === 1 ) {
+        // Early Game items only
+		case 6:
+			for (var i = 0; i < tmp.length; ++i)
+				if (tmp[i][LOOT_IDX_PHASE] === 1)
 					mainItemTable.push(tmp[i]);
-				}
-			}
 			break;
-    case 7: // +STR items only
-      for (var i = 0; i < tmp.length; ++i) {
-        if (util.containsFlag(tmp[i][LOOT_IDX_ATTR], PRIM_STR) && tmp[i][LOOT_IDX_PRICE] > 1000) {
-          mainItemTable.push(tmp[i]);
-        }
-      }
-      break;
-    case 8: // +AGI items only
-      for (var i = 0; i < tmp.length; ++i) {
-        if (util.containsFlag(tmp[i][LOOT_IDX_ATTR], PRIM_AGI) && tmp[i][LOOT_IDX_PRICE] > 1000) {
-          mainItemTable.push(tmp[i]);
-        }
-      }
-      break;
-    case 9: // +INT items only
-      for (var i = 0; i < tmp.length; ++i) {
-        if (util.containsFlag(tmp[i][LOOT_IDX_ATTR], PRIM_INT) && tmp[i][LOOT_IDX_PRICE] > 1000) {
-          mainItemTable.push(tmp[i]);
-        }
-      }
-      break;
-    case 10: // Mushrooms only
-      mainItemTable.length = 0;
-      for (var i = 0; i < tmp.length; ++i) {
-        if (tmp[i][LOOT_IDX_CLS] == "item_winter_mushroom") {
-          mainItemTable.push(tmp[i]);
-        }
-      }
-      break;
-    case 11: // Cursed Rapier only
-      mainItemTable.length = 0;
-      for (var i = 0; i < tmp.length; ++i) {
-        if (tmp[i][LOOT_IDX_CLS] == "item_halloween_rapier") {
-          tmp[i][LOOT_IDX_WEIGHT] = 25;
-          mainItemTable.push(tmp[i]);
-        }
-        if (tmp[i][LOOT_IDX_CLS] == "item_aegis") {
-          mainItemTable.push(tmp[i]);
-        }
-      }
-      break;
-	}
-	if (settings.itemTable.powerWeight > 1) {
-		for (var i = mainItemTable.length - 1; i > 0; i--) {
-      if (mainItemTable[i][LOOT_IDX_PHASE] > 1)
-        mainItemTable[i][LOOT_IDX_WEIGHT] = Math.pow(mainItemTable[i][LOOT_IDX_WEIGHT], (settings.itemTable.powerWeight + mainItemTable[i][LOOT_IDX_PHASE]) );
-		}
-	}
+        // Mushrooms only
+        case 7:
+            mainItemTable.length = 0;
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i][LOOT_IDX_CLS] == "item_winter_mushroom")
+                    mainItemTable.push(tmp[i]);
+            break;
+    }
+    if (settings.itemTable.powerWeight > 1) {
+        for (var i = mainItemTable.length - 1; i > 0; i--) {
+            if (mainItemTable[i][LOOT_IDX_PHASE] > 1)
+                mainItemTable[i][LOOT_IDX_WEIGHT] = Math.pow(mainItemTable[i][LOOT_IDX_WEIGHT], (settings.itemTable.powerWeight + mainItemTable[i][LOOT_IDX_PHASE]) );
+    	}
+    }
 	settings.itemTable.instance = mainItemTable;
 
 	// Setup our enchantment percentage
@@ -575,9 +462,7 @@ function buildItemTable() {
 		enchanter.percentage = 100;
 	}
 }
-
 function getUniqueItemName(playerID) {
-
   // Pull the items we've already randomed to this player
   var equipmentHandouts = playerManager.getProp(playerID, 'equipmentHandouts');
   // Pull the last equipment snapshot of this player.
@@ -621,21 +506,25 @@ function getUniqueItemName(playerID) {
       || equipmentHandouts.indexOf(item[0]) > -1      // Player already rolled this item
       || (hasBoots && boots.indexOf(item[0]) > -1));    // Player already has boots
 
-  // Is the item we rolled considered not a duplicate?
-  if (settings.doNotConsiderDupes.indexOf(item[0]) === -1) {
-    // Has the player 
-    if (!playerManager.getProp(playerID, 'nextDropFavored'))
-      if (item[2] < 2050)
-        playerManager.setProp(playerID, 'nextDropFavored', true);
-    else
-      playerManager.setProp(playerID, 'nextDropFavored', false);
+    // Is the item we rolled considered not a duplicate?
+    if (settings.doNotConsiderDupes.indexOf(item[0]) === -1) {
 
-    if ( typeof settings.itemTable.countLimitPerTeam[item[0]] == "undefined" )
-      settings.itemTable.countLimitPerTeam[item[0]] = 0;
 
-    settings.itemTable.countLimitPerTeam[item[0]] += 1;
 
-    if (settings.itemTable.limitPerTeam[item[0]] && settings.itemTable.countLimitPerTeam[item[0]] === settings.itemTable.limitPerTeam[item[0]]) {
+        // Has the player
+        if (!playerManager.getProp(playerID, 'nextDropFavored')) {
+            if (item[2] < 2050)
+                playerManager.setProp(playerID, 'nextDropFavored', true);
+        }
+        else
+            playerManager.setProp(playerID, 'nextDropFavored', false);
+
+    if ( typeof settings.itemTable.countItemsPerTeam[item[0]] == "undefined" )
+        settings.itemTable.countItemsPerTeam[item[0]] = 0;
+
+    settings.itemTable.countItemsPerTeam[item[0]] += 1;
+
+    if (settings.itemTable.limitPerTeam[item[0]] && settings.itemTable.countItemsPerTeam[item[0]] === settings.itemTable.limitPerTeam[item[0]]) {
       var teamID = playerManager.getTeamIDFromPlayerID(playerID);
       if (teamID !== null) {
         var playerIDs = playerManager.getConnectedPlayerIDs(teamID);
@@ -721,10 +610,10 @@ function getRandomLoot(playerID) {
   }
   loot = newLoot;
 
-	if (!settings.itemTable.useWeights) {
-		if (DEBUG) server.print('-- USING NON-WEIGHTED LOOT TABLE --');
-		return util.randomElement(loot);
-	}
+    if (!settings.itemTable.useWeights) {
+    	if (DEBUG) server.print('-- USING NON-WEIGHTED LOOT TABLE --');
+    	return util.randomElement(loot);
+    }
 
   var lootTotalWeight = 0, lootCumulativeWeight = 0, i, weight;
 
