@@ -1,3 +1,9 @@
+var settings = require('settings.js').s;
+var util = require('util.js');
+var itemManager = require('itemManager.js');
+
+var enchanter = settings.enchanter;
+
 // ==========================================
 // Lobby Setup
 // ==========================================
@@ -31,30 +37,28 @@ plugin.get('LobbyManager', function(obj){
 			break;
 	}
 	var option3 = lobbyManager.getOptionsForPlugin('WeaponMayhem')["Price"];
-	switch(option3)
+	switch(true)
 	{
 		default:
-		case "1500+":
 			settings.itemTable.priceRangeMin = 1500;
 			break;
-		case "2000+":
-			settings.itemTable.priceRangeMin = 2000;
+		// Minimum price range
+		case (option3.indexOf("+") > -1):
+			var minPrice = parseInt(option3);
+			settings.itemTable.priceRangeMin = minPrice;
 			break;
-		case "2500+":
-			settings.itemTable.priceRangeMin = 2500;
-			break;
-		case "1000+":
+		// Maximum price range
+		case (option3.indexOf("-") > -1):
+			var maxPrice = parseInt(option3);
+			settings.itemTable.priceRangeMax = maxPrice;
 			settings.itemTable.priceRangeMin = 1000;
-			break;
-		case "275+":
-			settings.itemTable.priceRangeMin = 275;
 			break;
 	}
 	var option4 = lobbyManager.getOptionsForPlugin('WeaponMayhem')["Selection"];
 	switch(option4)
 	{
 		default:
-		case "Include all items":
+		case "No specifics":
 			settings.itemTable.customMode = 1;
 			break;
 		case "Weapons":

@@ -1,3 +1,11 @@
+var timers = require('timers');
+
+var playerManager = require('playerManager.js');
+var settings = require('settings.js').s;
+var enchanter = settings.enchanter;
+var unitManager = require('unitManager.js');
+var util = require('util.js');
+
 // ==========================================
 // Player Enchantments
 // ==========================================
@@ -41,10 +49,10 @@ var enchantMap = {
 			max: 3,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'faceless_void_chronosphere';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				// ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -99,10 +107,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'item_force_staff';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				// ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -161,10 +169,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'tinker_laser';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				// ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -221,10 +229,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'item_orchid';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				// ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -281,10 +289,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'item_sheepstick';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				// ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -341,10 +349,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'crystal_maiden_frostbite';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -402,10 +410,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'item_diffusal_blade';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				// ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -458,10 +466,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'bane_enfeeble';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -516,10 +524,10 @@ var enchantMap = {
 			max: 3,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 6,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'slardar_amplify_damage';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -571,10 +579,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'mirana_leap';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -631,11 +639,11 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONHIT,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 
 				var BASE_ABILITY = 'keeper_of_the_light_mana_leak';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onHitEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -767,8 +775,8 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, 'sven_warcry');
+			setup: function(caster, ent, name, level) {
+				ent.enchants[name].base = dota.createAbility(caster, 'sven_warcry');
 
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
@@ -798,9 +806,7 @@ var enchantMap = {
 					1: {
 						ref: 'sven_warcry',
 						clsname: 'modifier_sven_warcry',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -812,10 +818,10 @@ var enchantMap = {
 			max: 1,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'dark_seer_surge';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				ent.enchants[name].props = {
@@ -826,9 +832,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_dark_seer_surge',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -842,10 +846,10 @@ var enchantMap = {
 			max: 3,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'riki_permanent_invisibility';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var FADE_TIME = 3;
@@ -871,9 +875,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_riki_permanent_invisibility',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -885,10 +887,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 6,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'enchantress_natures_attendants';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var WISP_COUNT = 3;
@@ -917,9 +919,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_enchantress_natures_attendants',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -931,10 +931,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 6,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'batrider_firefly';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var DOT = 20;
@@ -963,9 +963,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_batrider_firefly',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -977,10 +975,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'antimage_spell_shield';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var RESISTANCE = 26;
@@ -1009,9 +1007,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_antimage_spell_shield',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1023,10 +1019,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'dark_seer_ion_shell';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var DOT = 30;
@@ -1055,9 +1051,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_dark_seer_ion_shell',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1069,10 +1063,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'ogre_magi_bloodlust';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var BONUS_ATTACK_SPEED = 20;
@@ -1108,9 +1102,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_ogre_magi_bloodlust',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1122,10 +1114,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'brewmaster_drunken_brawler';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var DODGE_CHANCE = 10;
@@ -1161,9 +1153,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_brewmaster_drunken_brawler',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1175,10 +1165,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'magnataur_empower';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var BONUS_DAMAGE = 20;
@@ -1214,9 +1204,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_magnataur_empower',
-						options: {
-							duration: 3600
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1228,10 +1216,10 @@ var enchantMap = {
 			max: 1,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 6,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'item_armlet';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var BONUS_STRENGTH = 25;
@@ -1251,9 +1239,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_item_armlet_unholy_strength',
-						options: {
-							duration: 3600,
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1265,10 +1251,10 @@ var enchantMap = {
 			max: 3,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 12,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'ursa_enrage';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var MAX_HP_AS_DAMAGE = 5;
@@ -1294,9 +1280,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_ursa_enrage',
-						options: {
-							duration: 3600,
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1308,10 +1292,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'faceless_void_backtrack';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var DODGE_CHANCE = 10;
@@ -1340,9 +1324,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_faceless_void_backtrack',
-						options: {
-							duration: 3600,
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1354,10 +1336,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'huskar_inner_vitality';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var HP_REGEN = 2;
@@ -1398,9 +1380,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_huskar_inner_vitality',
-						options: {
-							duration: 3600,
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1412,10 +1392,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'medusa_mana_shield';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var DAMAGE_PER_MANA = 0.75;
@@ -1444,9 +1424,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_medusa_mana_shield',
-						options: {
-							duration: 3600,
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1462,7 +1440,7 @@ var enchantMap = {
 		// 	setup: function(ent, name, level) {
 		// 		var BASE_ABILITY = 'viper_corrosive_skin';
 
-		// 		ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+		// 		ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 		// 		ent.enchants[name].base.netprops.m_iLevel = level;
 
 		// 		var ATTK_MOVE_SLOW = 10;
@@ -1518,10 +1496,10 @@ var enchantMap = {
 			max: 4,
 			type: ENCHANT_ONEQUIP,
 			minimumHeroLevel: 1,
-			setup: function(ent, name, level) {
+			setup: function(caster, ent, name, level) {
 				var BASE_ABILITY = 'phantom_lancer_juxtapose';
 
-				ent.enchants[name].base = dota.createAbility(enchanter.onEquipEnchantEntity, BASE_ABILITY);
+				ent.enchants[name].base = dota.createAbility(caster, BASE_ABILITY);
 				ent.enchants[name].base.netprops.m_iLevel = level;
 
 				var ILLUSION_COUNT = 2;
@@ -1550,9 +1528,7 @@ var enchantMap = {
 					1: {
 						ref: BASE_ABILITY,
 						clsname: 'modifier_phantom_lancer_juxtapose',
-						options: {
-							duration: 3600,
-						}
+						options: {}
 					}
 				}
 				setNewModifier(ent, name);
@@ -1628,10 +1604,10 @@ timers.setInterval(function() {
 		var playerID = playerIDs[idx];
 		// Do we have a hero?
 		var hero = playerManager.grabHero(playerID);
-		if (hero === null) continue; // Skip
+		if (!hero || !hero.isValid()) continue; // Skip
 
 		// Is this hero alive?
-		if (unitManager.getLifeState(hero) !== UNIT_LIFE_STATE_ALIVE) continue; // Skip
+		if (unitManager.getLifeState(hero) !== settings.UNIT_LIFE_STATE_ALIVE) continue; // Skip
 
 		// Pull hero inventories
 		var equipment = unitManager.pullHeroInventory(hero, 0);
@@ -1696,8 +1672,11 @@ timers.setInterval(function() {
 							var modifier = enchName.modifiers[value];
 							if (dota.hasModifier(hero, modifier.clsname))
 								continue;
-
-							dota.addNewModifier(hero, enchName.base, modifier.clsname, modifier.ref, modifier.options);
+							
+							// Validate the ability
+							if(enchName.base && enchName.base.isValid()) {
+								dota.addNewModifier(hero, enchName.base, modifier.clsname, modifier.ref, modifier.options, hero);
+							}
 						}
 					}
 				}
@@ -1878,11 +1857,14 @@ function onEntityHurt(event) {
 		var sourceClient = dota.findClientByPlayerID(sourcePlayerID);
 		var targetClient = dota.findClientByPlayerID(sourcePlayerID);
 
+		if (!sourceClient || !targetClient)
+			return;
+
 		// Let's do work.
 		var source = sourceEntity;
 		var target = targetEntity;
 
-		var enchMap = enchants.enchantMap.onHit;
+		var enchMap = enchantMap.onHit;
 
 		// Initialize a new chain of modifier
 		var chain = new TimeoutChain();
@@ -1934,7 +1916,7 @@ function onEntityHurt(event) {
 									props[sourcePlayerID].enchantTimeouts[targetEntityID][name][value] = 0;
 
 								if (props[sourcePlayerID].enchantTimeouts[targetEntityID][name][value] === 1) {
-									if (DEBUG) server.print('Still in timeout');
+									if (settings.DEBUG) server.print('Still in timeout');
 									continue;
 								} else {
 									props[sourcePlayerID].enchantTimeouts[targetEntityID][name][value] = 1;
@@ -1942,10 +1924,10 @@ function onEntityHurt(event) {
 									// This will make a new copy of each thing, such that it wont be updated by the loop:
 									clearEnchantments(sourcePlayerID, targetEntityID, name, value, modifier.timeout);
 
-									if (DEBUG) server.print('Next Frame Step: Applying Modifier');
+									if (settings.DEBUG) server.print('Next Frame Step: Applying Modifier');
 
 									// Apply the modifier
-									applyModifier(target, enchant.base, modifier.clsname, modifier.ref, modifier.options);
+									applyModifier(target, enchant.base, modifier.clsname, modifier.ref, modifier.options, source);
 
 									if (enchant.sound) {
 										if (sourceClient) {
@@ -1953,12 +1935,12 @@ function onEntityHurt(event) {
 										}
 									}
 									applied = true;
-									if (DEBUG) server.print('Finished Frame Step: Applying Modifier');
+									if (settings.DEBUG) server.print('Finished Frame Step: Applying Modifier');
 								}
 							} else {
 								if (modifier.proc > 0) {
 									if (util.getRandomNumberExcludeZero(100) <= modifier.proc) {
-										applyModifier(target, enchant.base, modifier.clsname, modifier.ref, modifier.options);
+										applyModifier(target, enchant.base, modifier.clsname, modifier.ref, modifier.options, source);
 										if (enchant.sound) {
 											if (sourceClient) {
 												dota.sendAudio(sourceClient, false, ench.sound);
@@ -1967,7 +1949,7 @@ function onEntityHurt(event) {
 										applied = true;
 									}
 								} else {
-									applyModifier(target, enchant.base, modifier.clsname, modifier.ref, modifier.options);
+									applyModifier(target, enchant.base, modifier.clsname, modifier.ref, modifier.options, source);
 									if (enchant.sound) {
 										if (sourceClient) {
 											dota.sendAudio(sourceClient, false, ench.sound);
@@ -1979,7 +1961,7 @@ function onEntityHurt(event) {
 
 							if (applied) appliedTypes.push(name);
 
-							if (DEBUG & applied) server.print('Applied modifiers');
+							if (settings.DEBUG & applied) server.print('Applied modifiers');
 						}
 
 
@@ -1990,8 +1972,12 @@ function onEntityHurt(event) {
 	}
 }
 
-function applyModifier(target, base, clsname, ref, options) {
-	dota.addNewModifier(target, base, clsname, ref, options);
+function applyModifier(target, base, clsname, ref, options, caster) {
+	// Validate modifier
+	if(!target || !target.isValid() || !base || !base.isValid()) return;
+	
+	// Apply modifier
+	dota.addNewModifier(target, base, clsname, ref, options, caster);
 }
 
 function getMap() {

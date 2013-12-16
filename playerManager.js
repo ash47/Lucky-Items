@@ -1,3 +1,11 @@
+var timers = require('timers');
+var settings = require('settings.js').s;
+var util = require('util.js');
+var unitManager = require('unitManager.js');
+var sprintf = require('sprintf.js').vsprintf;
+var enchanter = settings.enchanter;
+var itemManager = require('itemManager.js');
+
 var playerProps = new Array(dota.MAX_PLAYERS);
 
 for (var i = 0; i < playerProps.length; ++i)
@@ -49,41 +57,34 @@ function giveItem(playerID, item) {
 		return false;
 	}
 	// Is the hero alive and well?
-	if (unitManager.getLifeState(hero) === UNIT_LIFE_STATE_ALIVE) {
+	if (unitManager.getLifeState(hero) === settings.UNIT_LIFE_STATE_ALIVE) {
 		// Do we have space in the player's inventory or stash?
-		switch(true) {
-			case unitManager.isInventoryAvailable(hero):
-				var IDX_START = HERO_INVENTORY_BEGIN;
-				var IDX_END = HERO_INVENTORY_END;
+		var hasSpace = false;
+		for(var i=0; i<12; i++) {
+			if(hero.netprops.m_hItems[i] == null) {
+				hasSpace = true;
 				break;
-			case unitManager.isBankAvailable(hero):
-				var IDX_START = HERO_STASH_BEGIN;
-				var IDX_END = HERO_STASH_END;
-				break;
-			default:
-				addToQueue(playerID, item);
-				return false;
-				break;
-		}
-		for (var i = IDX_START; i <= IDX_END; ++i) {
-			// Loop through the inventory until we find a free slot
-			if (hero.netprops.m_hItems[i] === null) {
-				// Give the item to our hero
-				var clsname = item[0];
-				dota.giveItemToHero(clsname, hero);
-				// Pull the item we just gave them in the same slot
-				var entity = hero.netprops.m_hItems[i];
-				// entity returns null when a combineable item combines to an item already in the player's inventory.
-				if (entity === null) return false;
-				// Possible enchant our loot
-				if (enchanter.enabled && enchanter.random) {
-					itemManager.enchantLoot(entity, item, playerID);
-				}
-				// Alter item properties
-				itemManager.changeItemProperties(entity, item, playerID);
-				return true;
 			}
 		}
+		
+		if(!hasSpace) {
+			addToQueue(playerID, item);
+			return false;
+		}
+		
+		// Give the item to our hero
+		var clsname = item[0];
+		
+		var entity = dota.giveItemToHero(clsname, hero);
+		
+		if (entity === null) return false;
+		// Possible enchant our loot
+		if (enchanter.enabled && enchanter.random) {
+			itemManager.enchantLoot(entity, item, playerID);
+		}
+		// Alter item properties
+		itemManager.changeItemProperties(entity, item, playerID);
+		return true;
 	}
 	else {
 		addToQueue(playerID, item);
@@ -121,13 +122,13 @@ function resetQueueReminder(playerID) {
 
 function printToAll(string, args) {
 	if (typeof(args) === 'undefined') args = [];
-	var playerIDs = playerManager.getConnectedPlayerIDs();
+	var playerIDs = getConnectedPlayerIDs();
 	for (var i = 0; i < playerIDs.length; ++i)
 	{
 		var playerID = playerIDs[i];
 		var client = dota.findClientByPlayerID(playerID);
 		var format = sprintf(string, args);
-		client.printToChat(g_plugin["prefix"] + " " + format);
+		client.printToChat(settings.prefix + " " + format);
 	}
 }
 
@@ -138,7 +139,7 @@ function printToPlayer(playerID, string, args) {
 	if (client === null)
 		return;
 
-	client.printToChat(g_plugin["prefix"] + " " + format);
+	client.printToChat(settings.prefix + " " + format);
 }
 
 // ==========================================
@@ -157,7 +158,7 @@ timers.setInterval(function() {
 		// Looped playerID
 		var playerID = playerIDs[i];
 		// Do we have a hero?
-		var hero = playerManager.grabHero(playerID);
+		var hero = grabHero(playerID);
 		if (hero === null) continue; // Skip
 		// Take a snapshot of a player's equipment, in-case they disconnect
 		playerProps[playerID].snapHeroEquip = unitManager.pullHeroEquipment(hero, 1);

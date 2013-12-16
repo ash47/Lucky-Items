@@ -46,19 +46,28 @@
 				"1500+",
 				"2000+",
 				"2500+",
+				"3000+",
+				"3500+",
+				"4000+",
 				"1000+",
-				"275+"
+				"275+",
+				"5500-",
+				"5000-",
+				"4500-",
+				"4000-",
+				"3500-",
+				"3000-",
+				"2500-"
 			]
 		},
 		"Selection": {
 			"type": "select",
 			"options": [
-				"Include all items",
+				"No specifics",
 				"Weapons",
 				"Caster",
 				"Defensive",
 				"only Rapier",
-				"only Mushrooms",
 				"only Early Game"
 			]
 		},

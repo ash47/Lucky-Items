@@ -1,16 +1,24 @@
+var settings = require('settings.js').s;
+var enchanter = settings.enchanter;
+var playerManager = require('playerManager.js');
+var enchants = require('enchantments.js');
+var util = require('util.js');
+var unitManager = require('unitManager.js');
+var itemManager = require('itemManager.js');
+
 // ==========================================
 // Client Commands
 // ==========================================
 //
-console.addClientCommand("li", listCommands);
+console.addClientCommand("lie", listCommands);
 function listCommands(client, args) {
 	var playerID = client.netprops.m_iPlayerID;
 	playerManager.print(playerID, "-queue (show queue items)");
 	playerManager.print(playerID, "-queue clear (destroys all)");
 	if (enchanter.enabled) {
-		playerManager.print(playerID, "-ei (show all enchants' descriptions)");
-		playerManager.print(playerID, "-ei 0 (scan inventory for enchants)");
-		playerManager.print(playerID, "-ei 1-6 (show slotted enchant properties, if any)");
+		playerManager.print(playerID, "-eie (show all enchants' descriptions)");
+		playerManager.print(playerID, "-eie 0 (scan inventory for enchants)");
+		playerManager.print(playerID, "-eie 1-6 (show slotted enchant properties, if any)");
 		if (enchanter.shop) {
 			playerManager.print(playerID, "-enchant 1-6 <name> (enchant item)");
 		}
@@ -63,7 +71,7 @@ function queueFunctions(client, args) {
 		}
 	}
 }
-console.addClientCommand("ei", enchantFunctions);
+console.addClientCommand("eie", enchantFunctions);
 function enchantFunctions(client, args) {
 	var playerID = client.netprops.m_iPlayerID;
 	if (!enchanter.enabled) {
@@ -126,7 +134,7 @@ function enchantFunctions(client, args) {
 
 	if (invSlot !== -1) {
 		var item = hero.netprops.m_hItems[invSlot];
-		if (item === null) {
+		if (item === null || !item.isValid()) {
 			playerManager.print(playerID, 'There is no item in this slot.');
 			return;
 		}
@@ -143,7 +151,7 @@ function enchantFunctions(client, args) {
 
 	        	var arr = enchants.enchantMap[cat];
 
-	        	if (DEBUG) server.print("Found item cat: " + cat);
+	        	if (settings.DEBUG) server.print("Found item cat: " + cat);
 
 		        for (var type in arr)
 		        {
@@ -153,7 +161,7 @@ function enchantFunctions(client, args) {
 
 		        	if (item.enchants[ench.name])
 		        	{
-		        		if (DEBUG) server.print("Found item enchant: " + ench.name);
+		        		if (settings.DEBUG) server.print("Found item enchant: " + ench.name);
 		        		var props = item.enchants[ench.name].props;
 
 		        		playerManager.print(playerID, '%s %s: {%s}', [named, util.capitaliseFirstLetter(ench.name), util.objToString(props) ]);
@@ -188,7 +196,7 @@ function enchantFunctions(client, args) {
 
 		        	var arr = enchants.enchantMap[cat];
 
-		        	if (DEBUG) server.print("Found item cat: " + cat);
+		        	if (settings.DEBUG) server.print("Found item cat: " + cat);
 
 			        for (var type in arr)
 			        {
@@ -198,7 +206,7 @@ function enchantFunctions(client, args) {
 
 			        	if (entity.enchants[ench.name])
 			        	{
-			        		if (DEBUG) server.print("Found item enchant: " + ench.name);
+			        		if (settings.DEBUG) server.print("Found item enchant: " + ench.name);
 			        		var props = entity.enchants[ench.name].props;
 
 			        		entity.chants.push(util.capitaliseFirstLetter(ench.name));

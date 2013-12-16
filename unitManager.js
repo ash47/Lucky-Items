@@ -1,3 +1,5 @@
+var settings = require('settings.js').s;
+
 exports.getLifeState = function(unit) {
 	if (!unit) return;
 
@@ -7,7 +9,7 @@ exports.getLifeState = function(unit) {
 exports.isBankAvailable = function(hero) {
 	if (!hero) return;
 
-	for (var i = HERO_STASH_BEGIN; i <= HERO_STASH_END; ++i) {
+	for (var i = settings.HERO_STASH_BEGIN; i <= settings.HERO_STASH_END; ++i) {
 		var entity = hero.netprops.m_hItems[i];
 		if (entity === null)
 			return true;
@@ -18,7 +20,7 @@ exports.isBankAvailable = function(hero) {
 exports.isInventoryAvailable = function(hero) {
 	if (!hero) return;
 
-	for (var i = HERO_INVENTORY_BEGIN; i <= HERO_INVENTORY_END; ++i) {
+	for (var i = settings.HERO_INVENTORY_BEGIN; i <= settings.HERO_INVENTORY_END; ++i) {
 		var entity = hero.netprops.m_hItems[i];
 		if (entity === null)
 			return true;
@@ -27,10 +29,10 @@ exports.isInventoryAvailable = function(hero) {
 }
 
 exports.pullHeroEquipment = function(hero, type) {
-	if (!hero) return;
+	if (!hero || !hero.isValid() || !hero.isHero()) return;
 
 	var heroItemsEquipped = [];
-	for (var i = HERO_INVENTORY_BEGIN; i <= HERO_STASH_END; i++)
+	for (var i = settings.HERO_INVENTORY_BEGIN; i <= settings.HERO_STASH_END; i++)
 	{
 		var entity = hero.netprops.m_hItems[i];
 		if (entity === null)
@@ -48,7 +50,7 @@ exports.pullHeroInventory = function(hero, type) {
 	if (!hero) return;
 
 	var heroItemsEquipped = [];
-	for (var i = HERO_INVENTORY_BEGIN; i <= HERO_INVENTORY_END; i++) {
+	for (var i = settings.HERO_INVENTORY_BEGIN; i <= settings.HERO_INVENTORY_END; i++) {
 		var entity = hero.netprops.m_hItems[i];
 		if (entity === null)
 			continue;
@@ -77,6 +79,7 @@ exports.isPlayerHero = function(entity) {
 }
 
 exports.checkForBoots = function(heroInventory, boots) {
+	if(!heroInventory) return false;
 	for (var i = 0; i < heroInventory.length; ++i)
 	{
 		if (boots.indexOf(heroInventory[i]) > -1)

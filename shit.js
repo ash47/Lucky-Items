@@ -1,26 +1,3 @@
-var timers = require('timers'); // Built-In Timers Library
-//var sprintf = require('sprintf.js').vsprintf; // Sprintf Library for dynamic strings
-//var mapManager = 
-
-//var unitManager = require('unitManager.js'); // Load exports related to hero/unit handling
-//
-//var enchants =  // Load the item enchantments
-
-require('enchantments.js');
-
-var settings = require('settings.js').s;
-var enchanter = settings.enchanter;
-var wardrobe = settings.wardrobe;
-
-var util = require('util.js');						// Load Utility Library
-var playerManager = require('playerManager.js');	// Load exports related to player handling
-var itemManager = require('itemManager.js');		// Load exports related to item handling
-
-require('mapManager.js');	// Load the Map Manager
-require('commands.js');		// Load the plugin commands
-require('dev.js');			// Load developer mode
-require('lobbyManager.js');	// Load lobby manager
-
 // ==========================================
 // Item Dispenser
 // ==========================================

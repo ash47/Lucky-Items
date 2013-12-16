@@ -1,3 +1,8 @@
+var settings = require('settings.js').s;
+var enchants = require('enchantments.js');
+
+var enchanter = settings.enchanter;
+
 // ==========================================
 // Hooks
 // ==========================================

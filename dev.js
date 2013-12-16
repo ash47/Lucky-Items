@@ -3,11 +3,13 @@
 // ==========================================
 //
 
-if (DEVELOPER) {
+var settings = require('settings.js').s;
+
+if (settings.DEVELOPER) {
 	server.print('----------\n\nWARNING: Developer mode is turned on!!!\n\n----------');
 	load();
 }
-if (DEBUG) {
+if (settings.DEBUG) {
 	server.print('----------\n\nWARNING: Debugger mode is turned on!!!\n\n----------');
 }
 
@@ -28,6 +30,25 @@ function load() {
 	// settings.queue.checkXSeconds = 0.1;
 
 	// setupItemTable("Caster/Support items only");
+
+	option3 = "2000-";
+	switch(true)
+	{
+		default:
+			settings.itemTable.priceRangeMin = 1500;
+			break;
+		// Minimum price range
+		case (option3.indexOf("+") > -1):
+			var minPrice = parseInt(option3);
+			settings.itemTable.priceRangeMin = minPrice;
+			break;
+		// Maximum price range
+		case (option3.indexOf("-") > -1):
+			var maxPrice = parseInt(option3);
+			settings.itemTable.priceRangeMax = maxPrice;
+			settings.itemTable.priceRangeMin = 1000;
+			break;
+	}
 
 	// Custom Mode 0 allows only a few items in.
 	settings.itemTable.customMode = 1;

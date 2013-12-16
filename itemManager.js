@@ -1,3 +1,11 @@
+var util = require('util.js');
+var settings = require('settings.js').s;
+var playerManager = require('playerManager.js');
+var unitManager = require('unitManager.js');
+var enchanter = settings.enchanter;
+var wardrobe = settings.wardrobe;
+var enchants = require('enchantments.js');
+
 // ==========================================
 // Loot Table Bit Flags
 // ==========================================
@@ -100,10 +108,10 @@ var baseItemTable = [
   // [0            1,           2,     3,         4,        5,         ]
   // ["Classname", weight(0-∞), price, gamePhase, shopMask, attrMask], // Weapon Name (price)
   //
-  ['item_halloween_rapier',       21, 6200, 3, SHOP_WEAPON, PRIM_NONE], // Halloween Rapier (0g)
-  ['item_winter_mushroom',         5,    0, 1, SHOP_CASTER, PRIM_ALL], // Winter Mushroom (0g)
+  // ['item_halloween_rapier',       21, 6200, 3, SHOP_WEAPON, PRIM_NONE], // Halloween Rapier (0g)
+ // ['item_winter_mushroom',         5,    0, 1, SHOP_CASTER, PRIM_ALL], // Winter Mushroom (0g)
   ['item_aegis',                   5,    0, 1, SHOP_ALL, PRIM_ALL], // Aegis of the Immortal (0g)
-  ['item_cheese',                  5,    0, 1, SHOP_ARMOR, PRIM_ALL], // Cheese (0g)
+  //['item_cheese',                  5,    0, 1, SHOP_ARMOR, PRIM_ALL], // Cheese (0g)
   //
   ['item_orb_of_venom',          300,  275, 1, 0, PRIM_NONE], // Orb of Venom (275g)
   ['item_null_talisman',         291,  470, 1, 4, PRIM_INT], // Null Talisman (470g)
@@ -118,17 +126,17 @@ var baseItemTable = [
   ['item_void_stone',            275,  875, 1, 0, PRIM_NONE], // Void Stone (875g)
   ['item_ring_of_health',        275,  875, 1, 0, PRIM_NONE], // Ring of Health (875g)
   ['item_helm_of_iron_will',     272,  950, 1, 0, PRIM_NONE], // Helm of Iron Will (950g)
-  ['item_tranquil_boots',        271,  975, 1, 0, PRIM_NONE], // Tranquil Boots (975g)
-  ['item_ring_of_aquila',        271,  985, 1, 0, PRIM_AGI], // Ring of Aquila (985g)
-  ['item_ogre_axe',              270, 1000, 1, 1, PRIM_STR], // Ogre Axe (1,000g)
-  ['item_blade_of_alacrity',     270, 1000, 1, 2, PRIM_AGI], // Blade of Alacrity (1,000g)
-  ['item_staff_of_wizardry',     270, 1000, 1, 4, PRIM_INT], // Staff of Wizardry (1,000g)
-  ['item_energy_booster',        270, 1000, 1, 4, PRIM_NONE], // Energy Booster (1,000g)
+  ['item_tranquil_boots',        271,  975, 1, 0,                   PRIM_NONE], // Tranquil Boots (975g)
+  ['item_ring_of_aquila',        271,  985, 1, 0,                   PRIM_AGI], // Ring of Aquila (985g)
+  ['item_ogre_axe',              270, 1000, 1, 1,                   PRIM_STR], // Ogre Axe (1,000g)
+  ['item_blade_of_alacrity',     270, 1000, 1, 2,                   PRIM_AGI], // Blade of Alacrity (1,000g)
+  ['item_staff_of_wizardry',     270, 1000, 1, 4,                   PRIM_INT], // Staff of Wizardry (1,000g)
+  ['item_energy_booster',        270, 1000, 1, 4,                   PRIM_NONE], // Energy Booster (1,000g)
   ['item_medallion_of_courage',  267, 1075, 1, SHOP_ARMOR,          PRIM_NONE], // Medallion of Courage (1,075g)
   ['item_vitality_booster',      266, 1100, 1, SHOP_ARMOR,          PRIM_NONE], // Vitality Booster (1,100g)
   ['item_point_booster',         262, 1200, 1, SHOP_ARMOR,          PRIM_NONE], // Point Booster (1,200g)
   ['item_broadsword',            262, 1200, 1, SHOP_WEAPON,         PRIM_NONE], // Broadsword (1,200g)
-  ['item_phase_boots',           256, 1350, 1, SHOP_NONE,         PRIM_NONE], // Phase Boots (1,350g)
+  ['item_phase_boots',           256, 1350, 1, SHOP_NONE,           PRIM_NONE], // Phase Boots (1,350g)
   ['item_platemail',             254, 1400, 1, SHOP_ARMOR,          PRIM_NONE], // Platemail (1,400g)
   ['item_claymore',              254, 1400, 1, SHOP_WEAPON,         PRIM_NONE], // Claymore (1,400g)
   ['item_power_treads',          254, 1400, 1, SHOP_ALL,            PRIM_ALL], // Power Treads (1,400g)
@@ -214,7 +222,7 @@ function getEntryByClassname(clsname) {
 	for (var i = 0; i < loot.length; i++) {
 		if (loot[i][0] === clsname)
 			return loot[i];
-    }
+	}
 }
 
 function enchantLoot(entity, item, playerID) {
@@ -222,124 +230,112 @@ function enchantLoot(entity, item, playerID) {
 	var isEnchantable = true;
 	if (isEnchantable) {
 		// Chance of additional item properties is lowered based on the time setting
-        var isEnchanted = true;
-        if (isEnchanted) {
-            // Combine enchantment categories
-            var arr1 = enchants.enchantMap.onHit;
-            var arr2 = enchants.enchantMap.onEquip;
-            var combined = arr2.concat(arr1);
+		var isEnchanted = true;
+		if (isEnchanted) {
+			// Combine enchantment categories
+			var arr1 = enchants.enchantMap.onHit;
+			var arr2 = enchants.enchantMap.onEquip;
+			var combined = arr2.concat(arr1);
 
-            // Shuffle enchant map
-            util.shuffle(combined);
+			// Shuffle enchant map
+			util.shuffle(combined);
 
-            var tmp = [], possibleEnchants = [];
-            var upgradeHandouts = playerManager.getProp(playerID, 'upgradeHandouts');
-            // Grab hero for minimum level checking
-            var hero = playerManager.grabHero(playerID);
-            if (hero !== null) {
-                var heroLevel = hero.netprops.m_iCurrentLevel;
-                for (var i = 0; i < combined.length; ++i) {
-                    var enchant = combined[i];
-                    if (heroLevel >= enchant.minimumHeroLevel && upgradeHandouts.indexOf(enchant.name) === -1)
-                        tmp.push(enchant);
-                }
-                if (tmp.length === 0)
-                    possibleEnchants = combined;
-                else
-                    possibleEnchants = tmp;
-            }
-            if (possibleEnchants.length === 0)
-                possibleEnchants = combined;
+			var tmp = [], possibleEnchants = [];
+			var upgradeHandouts = playerManager.getProp(playerID, 'upgradeHandouts');
+			// Grab hero for minimum level checking
+			var hero = playerManager.grabHero(playerID);
+			if (!hero) return;
+
+			var heroLevel = hero.netprops.m_iCurrentLevel;
+			for (var i = 0; i < combined.length; ++i) {
+				var enchant = combined[i];
+				if (heroLevel >= enchant.minimumHeroLevel && upgradeHandouts.indexOf(enchant.name) === -1)
+					tmp.push(enchant);
+			}
+			if (tmp.length === 0)
+				possibleEnchants = combined;
+			else
+				possibleEnchants = tmp;
+
+			if (possibleEnchants.length === 0)
+				possibleEnchants = combined;
 
 			// See how many we have total
 			// var total = possibleEnchants.length;
 			var rand = function(min, max) {
-			    return Math.random() * (max - min) + min;
+				return Math.random() * (max - min) + min;
 			};
 
-			var getRandomItem = function(list, weight) {
-			    var total_weight = weight.reduce(function (prev, cur, i, arr) {
-			        return prev + cur;
-			    });
+			var getRandomAmount = function(list, weight) {
+				var total_weight = weight.reduce(function (prev, cur, i, arr) {
+					return prev + cur;
+				});
 
-			    var random_num = rand(0, total_weight);
-			    var weight_sum = 0;
+				var random_num = rand(0, total_weight);
+				var weight_sum = 0;
 
-			    for (var i = 0; i < list.length; i++) {
-			        weight_sum += weight[i];
-			        weight_sum = +weight_sum.toFixed(2);
+				for (var i = 0; i < list.length; i++) {
+					weight_sum += weight[i];
+					weight_sum = +weight_sum.toFixed(2);
 
-			        if (random_num <= weight_sum) {
-			            return list[i];
-			        }
-			    }
+					if (random_num <= weight_sum) {
+						return list[i];
+					}
+				}
 			};
 
 			var list = [1, 2, 3];
 			var weight = [0.65, 0.25, 0.10];
-			var random_item = getRandomItem(list, weight);
+			var random_amount = getRandomAmount(list, weight);
 
 			// Pick some enchantments for our item
-			var selected = possibleEnchants.slice(0, random_item);
+			var selected = possibleEnchants.slice(0, random_amount);
 
-            function createProps(ent, name) {
-                if(!ent.enchants)
-                    ent.enchants = {};
+			function createProps(ent, name) {
+				if(!ent.enchants)
+					ent.enchants = {};
 
-                if(!ent.enchants[name])
-                    ent.enchants[name] = {};
+				if(!ent.enchants[name])
+					ent.enchants[name] = {};
 
-                if(!ent.enchants[name].props)
-                    ent.enchants[name].props = {level: 0};
+				if(!ent.enchants[name].props)
+					ent.enchants[name].props = {level: 0};
 
-                return ent;
-            }
+				return ent;
+			}
 
 			if (selected.length > 0) {
 				var entityName = entity.getClassname();
 				var named = getStringName(entityName);
 
-				if (selected.length === 1) {
-					var enchant = selected.shift();
+				var enchantNames = [];
+				var levels = [];
+				for (var i = 0; i < selected.length; ++i) {
+					var enchant = selected[i];
 					var name = util.capitaliseFirstLetter(enchant.name);
+					var level = util.getRandomNumberExcludeZero(enchant.max);
+					// Add upgrades to player upgrade array
+					if (upgradeHandouts.indexOf(enchant.name) === -1)
+						upgradeHandouts.push(enchant.name);
 
-                    entity = createProps(entity, enchant.name);
+					enchantNames.push(name + ' ' + level);
 
-					enchant.setup(entity, enchant.name, 1);
+					entity = createProps(entity, enchant.name);
 
-					playerManager.print(playerID, "%s has %s", [named, name]);
-
-                    if (upgradeHandouts.indexOf(enchant.name) === -1)
-                        upgradeHandouts.push(enchant.name);
+					enchant.setup(hero, entity, enchant.name, level);
 				}
-				else {
-					var enchantNames = [];
-					var levels = [];
-					for (var i = 0; i < selected.length; ++i) {
-						var enchant = selected[i];
-						var name = util.capitaliseFirstLetter(enchant.name);
-                        // Add upgrades to player upgrade array
-                        if (upgradeHandouts.indexOf(enchant.name) === -1)
-                            upgradeHandouts.push(enchant.name);
+				playerManager.print(playerID, "%s has %s", [named, enchantNames.join(", ")]);
 
-						enchantNames.push(name);
+				playerManager.setProp(playerID, 'upgradeHandouts', upgradeHandouts);
 
-                        entity = createProps(entity, enchant.name);
-
-						enchant.setup(entity, enchant.name, 1);
+				// Play a sound indicating this item was upgraded
+				if (settings.sounds.enabled) {
+					var client = dota.findClientByPlayerID(playerID);
+					if (client !== null) {
+						var sound = util.randomElement(settings.sounds.itemEnchanted);
+						dota.sendAudio(client, false, sound);
 					}
-					playerManager.print(playerID, "%s has %s", [named, enchantNames.join(", ")]);
 				}
-                playerManager.setProp(playerID, 'upgradeHandouts', upgradeHandouts);
-
-                // Play a sound indicating this item was upgraded
-                if (settings.sounds.enabled) {
-                    var client = dota.findClientByPlayerID(playerID);
-                    if (client !== null) {
-                        var sound = util.randomElement(settings.sounds.itemEnchanted);
-                        dota.sendAudio(client, false, sound);
-                    }
-                }
 			}
 		}
 	}
@@ -392,7 +388,7 @@ function buildItemTable() {
 	switch(settings.itemTable.customMode)
 	{
 		default:
-        // Price exemption "All"
+		// Price exemption "All"
 		case 1:
 			for (var i = 0; i < tmp.length; ++i) {
 				if ( tmp[i][2] > settings.itemTable.priceRangeMin && tmp[i][2] < settings.itemTable.priceRangeMax ) {
@@ -400,60 +396,60 @@ function buildItemTable() {
 				}
 			}
 			break;
-        // Aegis & Rapier
+		// Aegis & Rapier
 		case 2:
-            mainItemTable.length = 0;
-            var whiteList = ["item_rapier", "item_aegis", "item_halloween_rapier"];
-            for (var i = 0; i < tmp.length; ++i) {
-                // Add whitelist items to our new table.
-                if (whiteList.indexOf(tmp[i][LOOT_IDX_CLS]) > -1)
-                    mainItemTable.push(tmp[i]);
-                // Increase aegis weight to balance.
-                if (tmp[i][LOOT_IDX_CLS] == "item_aegis")
-                    tmp[i][LOOT_IDX_WEIGHT] = 8;
-            }
+			mainItemTable.length = 0;
+			var whiteList = ["item_rapier", "item_aegis"];
+			for (var i = 0; i < tmp.length; ++i) {
+				// Add whitelist items to our new table.
+				if (whiteList.indexOf(tmp[i][LOOT_IDX_CLS]) > -1)
+					mainItemTable.push(tmp[i]);
+				// Increase aegis weight to balance.
+				if (tmp[i][LOOT_IDX_CLS] == "item_aegis")
+					tmp[i][LOOT_IDX_WEIGHT] = 8;
+			}
 			break;
-        // Caster/Support items only
+		// Caster/Support items only
 		case 3:
 			for (var i = 0; i < tmp.length; ++i)
 				if (util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_CASTER)
-                    && (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax) )
+					&& (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax) )
 					mainItemTable.push(tmp[i]);
 			break;
-        // Weapons only
+		// Weapons only
 		case 4:
 			for (var i = 0; i < tmp.length; ++i)
 				if (util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_WEAPON)
-                    && (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax))
+					&& (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax))
 					mainItemTable.push(tmp[i]);
 			break;
-        // Armor/Defensive items only
+		// Armor/Defensive items only
 		case 5:
 			for (var i = 0; i < tmp.length; ++i)
 				if (util.containsFlag(tmp[i][LOOT_IDX_SHOP], SHOP_ARMOR)
-                    && (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax))
+					&& (tmp[i][LOOT_IDX_PRICE] > settings.itemTable.priceRangeMin && tmp[i][LOOT_IDX_PRICE] < settings.itemTable.priceRangeMax))
 					mainItemTable.push(tmp[i]);
 			break;
-        // Early Game items only
+		// Early Game items only
 		case 6:
 			for (var i = 0; i < tmp.length; ++i)
 				if (tmp[i][LOOT_IDX_PHASE] === 1)
 					mainItemTable.push(tmp[i]);
 			break;
-        // Mushrooms only
-        case 7:
-            mainItemTable.length = 0;
-            for (var i = 0; i < tmp.length; ++i)
-                if (tmp[i][LOOT_IDX_CLS] == "item_winter_mushroom")
-                    mainItemTable.push(tmp[i]);
-            break;
-    }
-    if (settings.itemTable.powerWeight > 1) {
-        for (var i = mainItemTable.length - 1; i > 0; i--) {
-            if (mainItemTable[i][LOOT_IDX_PHASE] > 1)
-                mainItemTable[i][LOOT_IDX_WEIGHT] = Math.pow(mainItemTable[i][LOOT_IDX_WEIGHT], (settings.itemTable.powerWeight + mainItemTable[i][LOOT_IDX_PHASE]) );
-    	}
-    }
+		// Mushrooms only
+		case 7:
+			mainItemTable.length = 0;
+			for (var i = 0; i < tmp.length; ++i)
+				if (tmp[i][LOOT_IDX_CLS] == "item_winter_mushroom")
+					mainItemTable.push(tmp[i]);
+			break;
+	}
+	if (settings.itemTable.powerWeight > 1) {
+		for (var i = mainItemTable.length - 1; i > 0; i--) {
+			if (mainItemTable[i][LOOT_IDX_PHASE] > 1)
+				mainItemTable[i][LOOT_IDX_WEIGHT] = Math.pow(mainItemTable[i][LOOT_IDX_WEIGHT], (settings.itemTable.powerWeight + mainItemTable[i][LOOT_IDX_PHASE]) );
+		}
+	}
 	settings.itemTable.instance = mainItemTable;
 
 	// Setup our enchantment percentage
@@ -469,12 +465,12 @@ function getUniqueItemName(playerID) {
   var snappedLastEquipment = playerManager.getProp(playerID, 'snapHeroEquip');
 
   var boots = [
-    "item_boots",
-    "item_travel_boots",
-    "item_tranquil_boots",
-    "item_arcane_boots",
-    "item_power_treads",
-    "item_phase_boots"
+	"item_boots",
+	"item_travel_boots",
+	"item_tranquil_boots",
+	"item_arcane_boots",
+	"item_power_treads",
+	"item_phase_boots"
   ];
   var hasBoots = unitManager.checkForBoots(snappedLastEquipment, boots);
 
@@ -482,77 +478,77 @@ function getUniqueItemName(playerID) {
   var rolls = 0;
   do
   {
-    rolls += 1;
-    // Need to have a limit somewhere
-    if (rolls <= settings.maxTries)
-      item = getRandomLoot(playerID);
-    else {
-      var possibleItems = settings.maxTriesLoot;
-      var selected = util.randomElement(possibleItems);
-      item = getEntryByClassname(selected);
-      break;
-    }
-    // Not sure what happened here.
-    if (!item || typeof item[0] == "undefined") {
-      var selected = util.randomElement(settings.maxTriesLoot);
-      item = getEntryByClassname(selected);
-      break;
-    }
-    // Legit roll of a duplicated item
-    if (settings.doNotConsiderDupes.indexOf(item[0]) > -1)
-      break;
+	rolls += 1;
+	// Need to have a limit somewhere
+	if (rolls <= settings.maxTries)
+	  item = getRandomLoot(playerID);
+	else {
+	  var possibleItems = settings.maxTriesLoot;
+	  var selected = util.randomElement(possibleItems);
+	  item = getEntryByClassname(selected);
+	  break;
+	}
+	// Not sure what happened here.
+	if (!item || typeof item[0] == "undefined") {
+	  var selected = util.randomElement(settings.maxTriesLoot);
+	  item = getEntryByClassname(selected);
+	  break;
+	}
+	// Legit roll of a duplicated item
+	if (settings.doNotConsiderDupes.indexOf(item[0]) > -1)
+	  break;
   }
   while (snappedLastEquipment.indexOf(item[0]) > -1       // Located in our hero's inventory
-      || equipmentHandouts.indexOf(item[0]) > -1      // Player already rolled this item
-      || (hasBoots && boots.indexOf(item[0]) > -1));    // Player already has boots
+	  || equipmentHandouts.indexOf(item[0]) > -1      // Player already rolled this item
+	  || (hasBoots && boots.indexOf(item[0]) > -1));    // Player already has boots
 
-    // Is the item we rolled considered not a duplicate?
-    if (settings.doNotConsiderDupes.indexOf(item[0]) === -1) {
+	// Is the item we rolled considered not a duplicate?
+	if (settings.doNotConsiderDupes.indexOf(item[0]) === -1) {
 
 
 
-        // Has the player
-        if (!playerManager.getProp(playerID, 'nextDropFavored')) {
-            if (item[2] < 2050)
-                playerManager.setProp(playerID, 'nextDropFavored', true);
-        }
-        else
-            playerManager.setProp(playerID, 'nextDropFavored', false);
+		// Has the player
+		if (!playerManager.getProp(playerID, 'nextDropFavored')) {
+			if (item[2] < 2050)
+				playerManager.setProp(playerID, 'nextDropFavored', true);
+		}
+		else
+			playerManager.setProp(playerID, 'nextDropFavored', false);
 
-    if ( typeof settings.itemTable.countItemsPerTeam[item[0]] == "undefined" )
-        settings.itemTable.countItemsPerTeam[item[0]] = 0;
+	if ( typeof settings.itemTable.countItemsPerTeam[item[0]] == "undefined" )
+		settings.itemTable.countItemsPerTeam[item[0]] = 0;
 
-    settings.itemTable.countItemsPerTeam[item[0]] += 1;
+	settings.itemTable.countItemsPerTeam[item[0]] += 1;
 
-    if (settings.itemTable.limitPerTeam[item[0]] && settings.itemTable.countItemsPerTeam[item[0]] === settings.itemTable.limitPerTeam[item[0]]) {
-      var teamID = playerManager.getTeamIDFromPlayerID(playerID);
-      if (teamID !== null) {
-        var playerIDs = playerManager.getConnectedPlayerIDs(teamID);
-        for (var i = 0; i < playerIDs.length; ++i)
-        {
-          var teamPlayerID = playerIDs[i];
-          // Skip the player that landed the item
-          if (teamPlayerID === playerID)
-            continue;
+	if (settings.itemTable.limitPerTeam[item[0]] && settings.itemTable.countItemsPerTeam[item[0]] === settings.itemTable.limitPerTeam[item[0]]) {
+	  var teamID = playerManager.getTeamIDFromPlayerID(playerID);
+	  if (teamID !== null) {
+		var playerIDs = playerManager.getConnectedPlayerIDs(teamID);
+		for (var i = 0; i < playerIDs.length; ++i)
+		{
+		  var teamPlayerID = playerIDs[i];
+		  // Skip the player that landed the item
+		  if (teamPlayerID === playerID)
+			continue;
 
-          var exclusionList = playerManager.getProp(teamPlayerID, "equipmentHandouts");
+		  var exclusionList = playerManager.getProp(teamPlayerID, "equipmentHandouts");
 
-          if ( exclusionList.indexOf(item[0]) > -1 )
-            continue;
+		  if ( exclusionList.indexOf(item[0]) > -1 )
+			continue;
 
-          exclusionList.push(item[0]);
-          playerManager.setProp(teamPlayerID, "equipmentHandouts", exclusionList);
-        }
-      }
-    }
-    equipmentHandouts.push(item[0]);
-    if ( settings.itemTable.componentExclude.items[item[0]] ) {
-      var entries = settings.itemTable.componentExclude.items[item[0]];
-      for (var i = 0; i < entries.length; ++i) {
-        equipmentHandouts.push(entries[i]);
-      }
-    }
-    playerManager.setProp(playerID, 'equipmentHandouts', equipmentHandouts);
+		  exclusionList.push(item[0]);
+		  playerManager.setProp(teamPlayerID, "equipmentHandouts", exclusionList);
+		}
+	  }
+	}
+	equipmentHandouts.push(item[0]);
+	if ( settings.itemTable.componentExclude.items[item[0]] ) {
+	  var entries = settings.itemTable.componentExclude.items[item[0]];
+	  for (var i = 0; i < entries.length; ++i) {
+		equipmentHandouts.push(entries[i]);
+	  }
+	}
+	playerManager.setProp(playerID, 'equipmentHandouts', equipmentHandouts);
   }
 
   return item;
@@ -564,27 +560,27 @@ function getRandomLoot(playerID) {
 	{
 		case (settings.itemTable.useWeights && wardrobe.enabled):
 			var loot = playerManager.getProp(playerID, 'lootTable');
-			if (DEBUG) server.print('-- USING PER-PLAYER LOOT TABLE --');
+			if (settings.DEBUG) server.print('-- USING PER-PLAYER LOOT TABLE --');
 			if (!loot) {
-				if (DEBUG) server.print('-- [NO PPL] -> USING LOBBY TABLE --');
+				if (settings.DEBUG) server.print('-- [NO PPL] -> USING LOBBY TABLE --');
 				loot = settings.itemTable.instance;
 				if (!loot) {
-					if (DEBUG) server.print('-- [NO LOBBY] -> USING BASE LOOT TABLE --');
+					if (settings.DEBUG) server.print('-- [NO LOBBY] -> USING BASE LOOT TABLE --');
 					loot = baseItemTable;
 				}
 			}
 			break;
 		case (settings.itemTable.instance !== null):
 			var loot = settings.itemTable.instance;
-			if (DEBUG) server.print('-- USING LOBBY LOOT TABLE --');
+			if (settings.DEBUG) server.print('-- USING LOBBY LOOT TABLE --');
 			if (!loot) {
-				if (DEBUG) server.print('-- [NO LOBBY] -> USING BASE LOOT TABLE --');
+				if (settings.DEBUG) server.print('-- [NO LOBBY] -> USING BASE LOOT TABLE --');
 				loot = baseItemTable;
 			}
 			break;
 		default:
 			var loot = baseItemTable;
-			if (DEBUG) server.print('-- USING BASE LOOT TABLE --');
+			if (settings.DEBUG) server.print('-- USING BASE LOOT TABLE --');
 			break;
 	}
 	// Does the player have his drops rigged?
@@ -597,152 +593,152 @@ function getRandomLoot(playerID) {
 			}
 			loot = chanceLoot;
 			playerManager.setProp(playerID, 'nextDropFavored', false);
-			if (DEBUG) server.print('-- USING FAVORED LOOT TABLE --');
+			if (settings.DEBUG) server.print('-- USING FAVORED LOOT TABLE --');
 		}
 	}
 
   var givenItems = playerManager.getProp(playerID, 'equipmentHandouts');
   var newLoot = [];
   for (var k = 0; k < loot.length; ++k) {
-    if (givenItems.indexOf(loot[k][0]) === -1) {
-      newLoot.push(loot[k]);
-    }
+	if (givenItems.indexOf(loot[k][0]) === -1) {
+	  newLoot.push(loot[k]);
+	}
   }
   loot = newLoot;
 
-    if (!settings.itemTable.useWeights) {
-    	if (DEBUG) server.print('-- USING NON-WEIGHTED LOOT TABLE --');
-    	return util.randomElement(loot);
-    }
+	if (!settings.itemTable.useWeights) {
+		if (settings.DEBUG) server.print('-- USING NON-WEIGHTED LOOT TABLE --');
+		return util.randomElement(loot);
+	}
 
   var lootTotalWeight = 0, lootCumulativeWeight = 0, i, weight;
 
   for (i = 0; i < loot.length; i++) {
-    lootTotalWeight += loot[i][1];
+	lootTotalWeight += loot[i][1];
   }
   var weight = Math.floor(Math.random() * lootTotalWeight);
   for (i = 0; i < loot.length; i++) {
-      lootCumulativeWeight += loot[i][1];
-      if (weight < lootCumulativeWeight ) {
-        return loot[i];
-      }
+	  lootCumulativeWeight += loot[i][1];
+	  if (weight < lootCumulativeWeight ) {
+		return loot[i];
+	  }
   }
 }
 
 
 function getStringName(clsname) {
   var clsnames = {
-    item_halloween_rapier: "Halloween Rapier",
-    item_winter_mushroom: "Winter Mushroom",
-    item_aegis: "Aegis of the Immortal",
-    item_cheese: "Cheese",
-    item_branches: "GG Branch",
-    item_orb_of_venom: "Orb of Venom",
-    item_null_talisman: "Null Talisman",
-    item_wraith_band: "Wraith Band",
-    item_magic_wand: "Magic Wand",
-    item_bracer: "Bracer",
-    item_poor_mans_shield: "Poor Man's Shield",
-    item_headdress: "Headdress",
-    item_soul_ring: "Soul Ring",
-    item_buckler: "Buckler",
-    item_urn_of_shadows: "Urn of Shadows",
-    item_void_stone: "Void Stone",
-    item_ring_of_health: "Ring of Health",
-    item_helm_of_iron_will: "Helm of Iron Will",
-    item_tranquil_boots: "Tranquil Boots",
-    item_ring_of_aquila: "Ring of Aquila",
-    item_ogre_axe: "Ogre Axe",
-    item_blade_of_alacrity: "Blade of Alacrity",
-    item_staff_of_wizardry: "Staff of Wizardry",
-    item_energy_booster: "Energy Booster",
-    item_medallion_of_courage: "Medallion of Courage",
-    item_vitality_booster: "Vitality Booster",
-    item_point_booster: "Point Booster",
-    item_broadsword: "Broadsword",
-    item_phase_boots: "Phase Boots",
-    item_platemail: "Platemail",
-    item_claymore: "Claymore",
-    item_power_treads: "Power Treads",
-    item_arcane_boots: "Arcane Boots",
-    item_javelin: "Javelin",
-    item_ghost: "Ghost Scepter",
-    item_shadow_amulet: "Shadow Amulet",
-    item_mithril_hammer: "Mithril Hammer",
-    item_oblivion_staff: "Oblivion Staff",
-    item_pers: "Perseverance",
-    item_ancient_janggo: "Drums of Endurance",
-    item_talisman_of_evasion: "Talisman of Evasion",
-    item_helm_of_the_dominator: "Helm of the Dominator",
-    item_hand_of_midas: "Hand of Midas",
-    item_mask_of_madness: "Mask of Madness",
-    item_vladmir: "Vladmir's Offering",
-    item_yasha: "Yasha",
-    item_sange: "Sange",
-    item_ultimate_orb: "Ultimate Orb",
-    item_hyperstone: "Hyperstone",
-    item_hood_of_defiance: "Hood of Defiance",
-    item_blink: "Blink Dagger",
-    item_lesser_crit: "Crystalys",
-    item_blade_mail: "Blade Mail",
-    item_vanguard: "Vanguard",
-    item_force_staff: "Force Staff",
-    item_mekansm: "Mekansm",
-    item_demon_edge: "Demon Edge",
-    item_travel_boots: "Boots of Travel",
-    item_armlet: "Armlet of Mordiggan",
-    item_veil_of_discord: "Veil of Discord",
-    item_mystic_staff: "Mystic Staff",
-    item_necronomicon: "Necronomicon 1",
-    item_maelstrom: "Maelstrom",
-    item_cyclone: "Eul's Scepter of Divinity",
-    item_dagon: "Dagon 1",
-    item_basher: "Skull Basher",
-    item_invis_sword: "Shadow Blade",
-    item_rod_of_atos: "Rod of Atos",
-    item_reaver: "Reaver",
-    item_soul_booster: "Soul Booster",
-    item_eagle: "Eaglesong",
-    item_diffusal_blade: "Diffusal Blade",
-    item_pipe: "Pipe of Insight",
-    item_relic: "Sacred Relic",
-    item_heavens_halberd: "Heaven's Halberd",
-    item_black_king_bar: "Black King Bar",
-    item_necronomicon_2: "Necronomicon 2",
-    item_dagon_2: "Dagon 2",
-    item_desolator: "Desolator",
-    item_sange_and_yasha: "Sange & Yasha",
-    item_orchid: "Orchid Malevolence",
-    item_diffusal_blade_2: "Diffusal Blade 2",
-    item_ultimate_scepter: "Aghanim's Scepter",
-    item_bfury: "Battle Fury",
-    item_shivas_guard: "Shiva's Guard",
-    item_ethereal_blade: "Ethereal Blade",
-    item_bloodstone: "Bloodstone",
-    item_manta: "Manta Style",
-    item_radiance: "Radiance",
-    item_sphere: "Linken's Sphere",
-    item_necronomicon_3: "Necronomicon 3",
-    item_dagon_3: "Dagon 3",
-    item_refresher: "Refresher Orb",
-    item_assault: "Assault Cuirass",
-    item_mjollnir: "Mjollnir",
-    item_monkey_king_bar: "Monkey King Bar",
-    item_heart: "Heart of Terrasque",
-    item_greater_crit: "Daedalus",
-    item_skadi: "Eye of Skadi",
-    item_sheepstick: "Scythe of Vyse",
-    item_butterfly: "Butterfly",
-    item_satanic: "Satanic",
-    item_rapier: "Divine Rapier",
-    item_dagon_4: "Dagon 4",
-    item_abyssal_blade: "Abyssal Blade",
-    item_dagon_5: "Dagon 5"
+	item_halloween_rapier: "Halloween Rapier",
+	item_winter_mushroom: "Winter Mushroom",
+	item_aegis: "Aegis of the Immortal",
+	item_cheese: "Cheese",
+	item_branches: "GG Branch",
+	item_orb_of_venom: "Orb of Venom",
+	item_null_talisman: "Null Talisman",
+	item_wraith_band: "Wraith Band",
+	item_magic_wand: "Magic Wand",
+	item_bracer: "Bracer",
+	item_poor_mans_shield: "Poor Man's Shield",
+	item_headdress: "Headdress",
+	item_soul_ring: "Soul Ring",
+	item_buckler: "Buckler",
+	item_urn_of_shadows: "Urn of Shadows",
+	item_void_stone: "Void Stone",
+	item_ring_of_health: "Ring of Health",
+	item_helm_of_iron_will: "Helm of Iron Will",
+	item_tranquil_boots: "Tranquil Boots",
+	item_ring_of_aquila: "Ring of Aquila",
+	item_ogre_axe: "Ogre Axe",
+	item_blade_of_alacrity: "Blade of Alacrity",
+	item_staff_of_wizardry: "Staff of Wizardry",
+	item_energy_booster: "Energy Booster",
+	item_medallion_of_courage: "Medallion of Courage",
+	item_vitality_booster: "Vitality Booster",
+	item_point_booster: "Point Booster",
+	item_broadsword: "Broadsword",
+	item_phase_boots: "Phase Boots",
+	item_platemail: "Platemail",
+	item_claymore: "Claymore",
+	item_power_treads: "Power Treads",
+	item_arcane_boots: "Arcane Boots",
+	item_javelin: "Javelin",
+	item_ghost: "Ghost Scepter",
+	item_shadow_amulet: "Shadow Amulet",
+	item_mithril_hammer: "Mithril Hammer",
+	item_oblivion_staff: "Oblivion Staff",
+	item_pers: "Perseverance",
+	item_ancient_janggo: "Drums of Endurance",
+	item_talisman_of_evasion: "Talisman of Evasion",
+	item_helm_of_the_dominator: "Helm of the Dominator",
+	item_hand_of_midas: "Hand of Midas",
+	item_mask_of_madness: "Mask of Madness",
+	item_vladmir: "Vladmir's Offering",
+	item_yasha: "Yasha",
+	item_sange: "Sange",
+	item_ultimate_orb: "Ultimate Orb",
+	item_hyperstone: "Hyperstone",
+	item_hood_of_defiance: "Hood of Defiance",
+	item_blink: "Blink Dagger",
+	item_lesser_crit: "Crystalys",
+	item_blade_mail: "Blade Mail",
+	item_vanguard: "Vanguard",
+	item_force_staff: "Force Staff",
+	item_mekansm: "Mekansm",
+	item_demon_edge: "Demon Edge",
+	item_travel_boots: "Boots of Travel",
+	item_armlet: "Armlet of Mordiggan",
+	item_veil_of_discord: "Veil of Discord",
+	item_mystic_staff: "Mystic Staff",
+	item_necronomicon: "Necronomicon 1",
+	item_maelstrom: "Maelstrom",
+	item_cyclone: "Eul's Scepter of Divinity",
+	item_dagon: "Dagon 1",
+	item_basher: "Skull Basher",
+	item_invis_sword: "Shadow Blade",
+	item_rod_of_atos: "Rod of Atos",
+	item_reaver: "Reaver",
+	item_soul_booster: "Soul Booster",
+	item_eagle: "Eaglesong",
+	item_diffusal_blade: "Diffusal Blade",
+	item_pipe: "Pipe of Insight",
+	item_relic: "Sacred Relic",
+	item_heavens_halberd: "Heaven's Halberd",
+	item_black_king_bar: "Black King Bar",
+	item_necronomicon_2: "Necronomicon 2",
+	item_dagon_2: "Dagon 2",
+	item_desolator: "Desolator",
+	item_sange_and_yasha: "Sange & Yasha",
+	item_orchid: "Orchid Malevolence",
+	item_diffusal_blade_2: "Diffusal Blade 2",
+	item_ultimate_scepter: "Aghanim's Scepter",
+	item_bfury: "Battle Fury",
+	item_shivas_guard: "Shiva's Guard",
+	item_ethereal_blade: "Ethereal Blade",
+	item_bloodstone: "Bloodstone",
+	item_manta: "Manta Style",
+	item_radiance: "Radiance",
+	item_sphere: "Linken's Sphere",
+	item_necronomicon_3: "Necronomicon 3",
+	item_dagon_3: "Dagon 3",
+	item_refresher: "Refresher Orb",
+	item_assault: "Assault Cuirass",
+	item_mjollnir: "Mjollnir",
+	item_monkey_king_bar: "Monkey King Bar",
+	item_heart: "Heart of Terrasque",
+	item_greater_crit: "Daedalus",
+	item_skadi: "Eye of Skadi",
+	item_sheepstick: "Scythe of Vyse",
+	item_butterfly: "Butterfly",
+	item_satanic: "Satanic",
+	item_rapier: "Divine Rapier",
+	item_dagon_4: "Dagon 4",
+	item_abyssal_blade: "Abyssal Blade",
+	item_dagon_5: "Dagon 5"
   }
   if (typeof clsnames[clsname] !== "undefined")
-    return clsnames[clsname];
+	return clsnames[clsname];
   else
-    return clsname;
+	return clsname;
 }
 
 exports.getStringName = getStringName;
